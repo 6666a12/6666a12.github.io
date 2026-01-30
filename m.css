@@ -16,7 +16,7 @@ body{
 }
 .bt{
     right: 30px;
-    bottom: 30px;
+    bottom: 10px;
     position: fixed;
 }
 .bt:hover{
