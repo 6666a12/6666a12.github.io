@@ -8,6 +8,9 @@
     <link rel="stylesheet" type="text/css" href="../css/log-in.css">
 </head>
 <body>
+    <div class="ed" id="edit">
+        <img class="bg" style="opacity: 0.25" alt="" src="../pic/yz.jpg">
+    </div>  
     <div id="topm">
         <ul class="topmenu">
             <li><img src="../pic/stream-pig.gif" width="40" height="40" alt=""></li>
@@ -21,12 +24,21 @@
         <input placeholder="PassWord" type="password" title="0" id="PassWord" pattern=[0-9] required><br>
         <button onclick="det()">Login</button>
     </div>
-    <div class="ed" id="edit">
-        <img class="bg" alt="" src="pic/yz.jpg">
-    </div>  
+    
 </body>
 <script src="../sc.js"></script>
 <script>
+    /* part1 */
+    const $ = (id) => document.getElementById(id);
+    const show = (el,yes = true) => 
+    el.classList.toggle("hidden",!yes);
+    const msg = (boxid,txt,isErr = true) =>{
+        const box = $(boxid);
+        box.textContent = txt;
+        box.className = isErr ? 'error' : 'success';
+    }
+    
+    /* part2 */
     usnm = document.getElementById("UserName");
     pswd = document.getElementById("PassWord");
     isshow = false;
@@ -37,12 +49,7 @@
             alert(error+" Please Try again");
             return;
         }
-        if(usnm.value=="abc12"&&pswd.value==7721)isshow = true;
+        
     }
-    function toggle(){
-        document.getElementById("edit").classList.toggle('hidden', !isVisible);
-        requestAnimationFrame(toggle);
-    }
-    setInterval(toggle,100);
 </script>
 </html>
