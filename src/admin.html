@@ -16,10 +16,33 @@
     </div>
     <div id="login">
         <p><b>UserName:</b></p>
-        <input type="text" title="UserName">
+        <input placeholder="UserName" type="text" title="0" id="UserName" required>
         <p><b>PassWord:</b></p>
-        <input type="text" title="PassWord">
+        <input placeholder="PassWord" type="password" title="0" id="PassWord" pattern=[0-9] required><br>
+        <button onclick="det()">Login</button>
     </div>
+    <div class="ed" id="edit">
+        <img class="bg" alt="" src="pic/yz.jpg">
+    </div>  
 </body>
 <script src="../sc.js"></script>
+<script>
+    usnm = document.getElementById("UserName");
+    pswd = document.getElementById("PassWord");
+    isshow = false;
+    const det = () => {
+        try{
+            if(!pswd.checkValidity())throw Error("Invalid Entry!");
+        }catch(error) {
+            alert(error+" Please Try again");
+            return;
+        }
+        if(usnm.value=="abc12"&&pswd.value==7721)isshow = true;
+    }
+    function toggle(){
+        document.getElementById("edit").classList.toggle('hidden', !isVisible);
+        requestAnimationFrame(toggle);
+    }
+    setInterval(toggle,100);
+</script>
 </html>

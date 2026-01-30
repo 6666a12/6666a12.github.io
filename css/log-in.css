@@ -1,6 +1,15 @@
-#login{
-    margin: -5px 10px;
+#login{margin: 10px;}
+#login *{margin: 5px 0px;}
+#login input{margin-left: 30px;}    
+#login button{
+    border-style: dashed;
+    border-width: 4px;
+    border-radius: 5px;
+    padding: 5px;
+    margin-top: 15px;
+    margin-left: 70px;
+    font-size: 17px;
 }
-#login input{
-    margin-left: 30px;
+#login button:hover{
+    background-color: aliceblue;
 }
