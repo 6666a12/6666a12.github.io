@@ -84,6 +84,7 @@ body{
     margin: 10px 20px;
     padding: 10px;
     z-index: 1;
+    width: 700px;
     font-family :'Courier New', Courier, monospace;
 }
 .undo{

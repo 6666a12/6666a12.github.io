@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../css/m.css">
     <link rel="stylesheet" type="text/css" href="../css/log-in.css">
 </head>
-<body>
+<body onload="main()">
     <div class="ed" id="edit">
         <img class="bg" style="opacity: 0.25" alt="" src="../pic/yz.jpg">
     </div>  
@@ -18,37 +18,32 @@
         </ul>
     </div>
     <div id="login">
-        <p><b>UserName:</b></p>
-        <input placeholder="UserName" type="text" title="0" id="UserName" required>
-        <p><b>PassWord:</b></p>
-        <input placeholder="PassWord" type="password" title="0" id="PassWord" pattern=[0-9] required><br>
-        <button onclick="det()">Login</button>
+        <form id='loginf' onsubmit="return checkform('loginf')">
+            <p><b>UserName:</b></p>
+            <input placeholder="UserName" type="text" title="0" id="UserName" required>
+            <p><b>PassWord:</b></p>
+            <input placeholder="PassWord" type="password" title="0" id="PassWord" pattern=[0-9]+ required><br>
+            <button onclick="det()">Login</button>           
+        </form>
+        <canvas id="new-canvas"></canvas>
     </div>
     
 </body>
+<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
 <script src="../sc.js"></script>
 <script>
     /* part1 */
     const $ = (id) => document.getElementById(id);
-    const show = (el,yes = true) => 
-    el.classList.toggle("hidden",!yes);
+    const show = (el,yes = true) => el.classList.toggle("hidden",!yes);
     const msg = (boxid,txt,isErr = true) =>{
         const box = $(boxid);
         box.textContent = txt;
         box.className = isErr ? 'error' : 'success';
     }
+    const push = (data,url) => history.pushState(data,'',url);
+
     /* part2 */
-    usnm = document.getElementById("UserName");
-    pswd = document.getElementById("PassWord");
-    isshow = false;
-    const det = () => {
-        try{
-            if(!pswd.checkValidity())throw Error("Invalid Entry!");
-        }catch(error) {
-            alert(error+" Please Try again");
-            return;
-        }
-        
-    }
+    
+    
 </script>
 </html>
