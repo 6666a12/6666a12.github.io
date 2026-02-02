@@ -20,11 +20,12 @@
     <div id="login">
         <form id='loginf' onsubmit="return checkform()">
             <p><b>UserName:</b></p>
-            <input placeholder="UserName" type="text" title="0" id="UserName" required>
+            <input placeholder="UserName" type="text" title="0" id="UserName" name="username" required>
             <p><b>PassWord:</b></p>
             <input placeholder="PassWord" type="password" title="0" id="PassWord" required><br>
-            <button type="submit">Login</button>
-            <button type="submit">Register</button>           
+            <input type="hidden" id="md5-PassWord" name="password_MD5">
+            <button type="submit" onclick="isreg = true">Login</button>
+            <button type="submit" onclick="isreg = false">Register</button>           
         </form>
     </div>
     
@@ -33,24 +34,24 @@
 <script src="../sc.js"></script>
 <script>
     /* part1 */
+    const isreg = true;
     const std_usnm = /[0-9a-zA-Z]{4,8}/; 
     const std_pswd = /[0-9]{6-10}/;
-    const $ = (id) => document.getElementById(id);
+    /* 调整可见性 */
     const show = (el,yes = true) => el.classList.toggle("hidden",!yes);
     const msg = (boxid,txt,isErr = true) =>{
         const box = $(boxid);
         box.textContent = txt;
         box.className = isErr ? 'error' : 'success';
     }
-    const push = (data,url) => history.pushState(data,'',url);
-
-    /* part2 */
-    function exm(std,txt){
+    /* 检验输入格式 */
+    const exm = (std,txt) => {
         if(!std.test(txt)){
             alert("Format unmatched! Please Try again");
             location.reload();
         }
     }
+
     function checkform(){
         usnm = $("#UserName");
         pswd = $("#PassWord");
@@ -58,6 +59,32 @@
         exm(std_pswd,pswd.innerText);
         return true;
     }
+
+    const form = $('#loginf');
+    const channel = new BroadcastChannel('form-channel');
+    form.addEventListener('submit',(event) => {
+        event.preventDefault();
+        console.log('登陆中');
+        channel.postMessage({
+            type: 'FORM_SUBMIT',
+            data: {
+                username: form.get('UserName'),
+                password_MD5: form.get('md5-PassWord'),
+                isreg0: isreg
+            },
+            timestamp: Date.now()
+        });
+        window.open('key.html','_blank');
+    })
+
+
+    
+    const send2url = (data,url) =>{
+        history.pushState(data,'',url);
+        window.open(url);
+    }
+
+   
     
 </script>
 </html>

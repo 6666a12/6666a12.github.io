@@ -48,6 +48,15 @@
 <script>
     const user = {id : '',psd : ''};
     const channel = new BroadcastChannel('form-channel');
-
+    channel.addEventListener('message', function(event) {
+        if (event.data.type === 'FORM_SUBMIT') {
+            console.log('收到表单数据:', event.data.data);
+            user.id = event.data.username;
+            user.psd = event.data.password_MD5;
+        }
+    });
+    const islogin = () => {
+        
+    };
 </script>
 </html>
