@@ -29,6 +29,7 @@ body{
     padding: 10px;
 }
 .topmenu{
+    z-index: 1;
     list-style-type: none;
     background-color: antiquewhite;
     color:blueviolet;
@@ -86,6 +87,41 @@ body{
     z-index: 1;
     width: 700px;
     font-family :'Courier New', Courier, monospace;
+}
+
+/* keyframes */
+@keyframes breathe{
+    0%,100%{
+        opacity: 1;
+    }
+    50%{
+        opacity: 0.4;
+    }
+}
+@keyframes flipInY{
+    from{
+        transform: perspective(400px) rotateY(0);
+    }
+    to{
+        transform: perspective(400px) rotateY(360deg);
+    }
+}
+@keyframes flipInX{
+    from{
+        transform: perspective(400px) rotateX(0);
+    }
+    to{
+        transform: perspective(400px) rotateX(360deg);
+    }
+}
+.breathe{animation: breathe 1s infinite;}
+.flipInY{animation: flipInY 4s;}
+.flipInX{animation: flipInX 4s;}
+.day{
+
+}
+.night{
+
 }
 .undo{
     color: aquamarine;

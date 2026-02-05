@@ -6,6 +6,7 @@
     <title>Log in</title>
     <link rel="stylesheet" type="text/css" href="../css/m.css">
     <link rel="stylesheet" type="text/css" href="../css/log-in.css">
+    <link rel="stylesheet" type="text/css" href="../css/alert_button.css">
 </head>
 <body onload="main()">
     <div class="ed" id="edit">
@@ -14,21 +15,32 @@
     <div id="topm">
         <ul class="topmenu">
             <li><img src="../pic/stream-pig.gif" width="40" height="40" alt=""></li>
-            <li><div id="clock"></div></li>
+            <li><div id="clock" class="breathe"></div></li>
         </ul>
     </div>
     <div id="login">
         <form id='loginf' onsubmit="return checkform()">
+            <h1><b>Login:</b></h1>
             <p><b>UserName:</b></p>
             <input placeholder="UserName" type="text" title="0" id="UserName" name="username" required>
             <p><b>PassWord:</b></p>
             <input placeholder="PassWord" type="password" title="0" id="PassWord" required><br>
             <input type="hidden" id="md5-PassWord" name="password_MD5">
-            <button type="submit" onclick="isreg = true">Login</button>
-            <button type="submit" onclick="isreg = false">Register</button>           
+            <button type="submit" onclick="Login()">Login</button>
+            <button type="submit" onclick="Register()">Register</button>           
         </form>
     </div>
-    
+    <div id="66"></div>
+    <template id="alert">
+        <div class="temp1">
+            <div class="bt_bg" id="d1"></div>
+            <div class="bt_div" id="d2">
+                <div class="bt_txt" id="d3"></div>
+                <button class="bt_bt" id="b1" onclick="confirm0()"></button>
+                <button class="bt_bt" id="b2" onclick="cancel0()"></button>
+            </div>
+        </div>
+    </template>
 </body>
 <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
 <script src="../sc.js"></script>
@@ -38,7 +50,7 @@
     const std_usnm = /[0-9a-zA-Z]{4,8}/; 
     const std_pswd = /[0-9]{6-10}/;
     /* 调整可见性 */
-    const show = (el,yes = true) => el.classList.toggle("hidden",!yes);
+    
     const msg = (boxid,txt,isErr = true) =>{
         const box = $(boxid);
         box.textContent = txt;
@@ -51,7 +63,6 @@
             location.reload();
         }
     }
-
     function checkform(){
         usnm = $("#UserName");
         pswd = $("#PassWord");
@@ -59,8 +70,24 @@
         exm(std_pswd,pswd.innerText);
         return true;
     }
-
+    const generateToken = (length = 32) => {
+        const array = new Uint8Array(length);
+        crypto.getRandomValues(array);
+        return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
     const form = $('#loginf');
+    
+
+    form.addEventListener('submit',(event) => {
+        const data = {
+            username: form.get('UserName'),
+            Token: generateToken(),
+            loginTime: Date.now(),
+            expires: Date.now() + 24*60*60*1000
+        };
+    })
+
+/*
     const channel = new BroadcastChannel('form-channel');
     form.addEventListener('submit',(event) => {
         event.preventDefault();
@@ -76,14 +103,28 @@
         });
         window.open('key.html','_blank');
     })
+*/
+    const confirm0 = () => {
 
+    }
+    const cancel0 = () => {
 
-    
+    }
+    history.addEventListener('back',(event) => {
+        const button1 = $('#alert');
+        const btarea = $('66');
+        const temp =  button.content.cloneNode(true);
+        const root = temp.querySelector("temp1");
+        root.querySelector("#d2").textContent = "";
+        root.querySelector("#d3").textContent = "你真的要向前返回吗？可能导致数据全部丢失！";
+        root.querySelector("#b1").textContent = "是";
+        root.querySelector("#b2").textContent = "否";
+    })
     const send2url = (data,url) =>{
         history.pushState(data,'',url);
         window.open(url);
     }
-
+    
    
     
 </script>

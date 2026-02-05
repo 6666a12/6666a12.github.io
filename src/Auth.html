@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    
+</body>
+<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+<script src="../sc.js"></script>
+<script>
+    const user = {id : '',psd : '',isreg : false};
+    const channel = new BroadcastChannel('form-channel');
+    channel.addEventListener('message', function(event) {
+        if (event.data.type === 'FORM_SUBMIT') {
+            console.log('收到表单数据:', event.data.data);
+            user.id = event.data.username;
+            user.psd = event.data.password_MD5;
+            user.isreg = event.data.isreg0;
+        }
+    });
+    /* Login Processor */
+</script>
+</html>
