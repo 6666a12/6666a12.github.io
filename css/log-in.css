@@ -13,3 +13,18 @@
 #login button:hover{
     background-color: aliceblue;
 }
+#register{margin: 10px;}
+#register *{margin: 5px 0px;}
+#register input{margin-left: 30px;}    
+#register button{
+    border-style: dashed;
+    border-width: 3px;
+    border-radius: 5px;
+    padding: 5px;
+    margin-top: 15px;
+    margin-left: 30px;
+    font-size: 17px;
+}
+#login button:hover{
+    background-color: aliceblue;
+}

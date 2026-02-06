@@ -11,16 +11,13 @@
 <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
 <script src="../sc.js"></script>
 <script>
-    const user = {id : '',psd : '',isreg : false};
-    const channel = new BroadcastChannel('form-channel');
-    channel.addEventListener('message', function(event) {
-        if (event.data.type === 'FORM_SUBMIT') {
-            console.log('收到表单数据:', event.data.data);
-            user.id = event.data.username;
-            user.psd = event.data.password_MD5;
-            user.isreg = event.data.isreg0;
-        }
-    });
-    /* Login Processor */
+    /* 
+        思路：
+        /users/用户名.json
+        json中存储对应用户名密码的sha256形式
+        注册即为创建新json文件
+        登录就是搜索对应文件名
+        不存在相应文件名就返回403 密码错误就返回404
+    */
 </script>
 </html>

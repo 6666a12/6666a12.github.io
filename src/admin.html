@@ -18,18 +18,237 @@
             <li><div id="clock" class="breathe"></div></li>
         </ul>
     </div>
-    <div id="login">
-        <form id='loginf' onsubmit="return checkform()">
-            <h1><b>Login:</b></h1>
-            <p><b>UserName:</b></p>
-            <input placeholder="UserName" type="text" title="0" id="UserName" name="username" required>
-            <p><b>PassWord:</b></p>
-            <input placeholder="PassWord" type="password" title="0" id="PassWord" required><br>
-            <input type="hidden" id="md5-PassWord" name="password_MD5">
-            <button type="submit" onclick="Login()">Login</button>
-            <button type="submit" onclick="Register()">Register</button>           
-        </form>
-    </div>
+
+    <!-- Where the pages are rendered -->
+    <div id="app"></div>
+
+    <template id="page-login">
+        <div id="login">
+            <form id='loginf' onsubmit="return checkform()">
+                <h1><b>Login:</b></h1>
+                <p><b>UserName:</b></p>
+                <input placeholder="UserName" type="text" title="0" id="UserName" name="username" required>
+                <p><b>PassWord:</b></p>
+                <input placeholder="PassWord" type="password" title="0" id="PassWord" required><br>
+                <input type="hidden" id="PassWord-SHA256" name="password_SHA256">
+                <button type="submit">Login</button>
+                <button type="button" onclick="router.push('/register')">Go to Reg</button>              
+            </form>
+        </div>
+    </template>
+
+    <template id="page-register">
+        <div id="register">
+            <form id='regf' onsubmit="return checkform()">
+                <h1><b>Register:</b></h1>
+                <p><b>UserName:</b></p>
+                <input placeholder="UserName" type="text" title="0" id="UserName" name="username" required>
+                <p><b>PassWord:</b></p>
+                <input placeholder="PassWord" type="password" title="0" id="PassWord" required><br>
+                <input type="hidden" id="PassWord-SHA256" name="password_SHA256">
+                <button type="submit">Register</button>
+                <button type="button" onclick="router.push('/login')">Go to Login</button>              
+            </form>
+        </div>
+    </template>
+    
+    <template id="page-user">
+
+    </template>
+
+    <template id="page-404">
+        <h1>Page Unfound!</h1>
+    </template>
+    
+</body>
+<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+<script src="../sc.js"></script>
+<script>
+    // Def
+    const isreg = true;
+    const std_usnm = /[0-9a-zA-Z]{4,8}/; 
+    const std_pswd = /[0-9]{6,10}/;
+    const form1 = $('#loginf');
+    const form2 = $('#regf');
+    const channel = new BroadcastChannel('form-channel');
+    
+    // Hash Router Setup
+    class HashRouter{
+        constructor(routes){
+            this.routes = routes;
+            this.CurrentPage = null;
+            this.isdirty = false;
+
+            window.addEventListener('hashchange' , (event) => {
+                if(this.isdirty && !confirm("数据未保存,确认退出?")){
+                    event.preventDefault();
+                    history.pushState(null,'',event.oldURL);
+                    return;
+                }
+                this.render();
+            });
+
+            window.addEventListener('DOMContentLoaded' , () => this.render());
+        }
+
+        getPath(){return location.hash.slice(1) || '/';}
+        push(path){location.hash = path;}
+        setdirty(flag){this.isdirty = flag;}
+
+        render(){
+            let path = this.getPath();
+            const handler = this.routes[path] || this.routes['*'];
+
+            handler?.(path);
+        }
+    }
+
+    const RenderPage = (TemplateId,setupFn) => {
+        const app = document.getElementById('app');
+        
+        // 蛋出
+        app.style.opacity = '0';
+        app.style.transition = 'opacity 0.2s';
+
+        setTimeout(() =>{
+            const template = document.getElementById(TemplateId);
+            app.innerHTML = '';
+            app.appendChild(template.content.cloneNode(true));
+            setupFn?.();
+
+            app.style.opacity = '1';
+        },200);
+     
+    }
+    
+    const routes = {
+        '/login' : () => RenderPage('page-login'),
+        '/register' : () => RenderPage('page-register'),
+        '/user' : () => RenderPage('page-user'),
+        '*' : () => RenderPage('page-404')
+    }
+
+    const router = new HashRouter(routes);
+
+    router.push('/login');
+
+    // some Function Def
+    async function sha256(message) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    const show = (el,yes = true) => el.classList.toggle("hidden",!yes);
+    const generateToken = (length = 32) => {
+        const array = new Uint8Array(length);
+        crypto.getRandomValues(array);array
+        return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    const msg = (boxid,txt,isErr = true) =>{
+        const box = $(boxid);
+        box.textContent = txt;
+        box.className = isErr ? 'error' : 'success';
+    }
+    const exm = (std,txt) => {
+        if(!std.test(txt)){
+            alert("Format unmatched! Please Try again");
+            location.reload();
+        }
+    }
+    const checkform = () => {
+        usnm = $("#UserName");
+        pswd = $("#PassWord");
+        exm(std_usnm,usnm.innerText);
+        exm(std_pswd,pswd.innerText);
+        return true;
+    }
+    
+    form1.addEventListener('submit',(event) => {
+        event.preventDefault();
+        const data = {
+            username: form.get('UserName'),
+            Token: generateToken(),
+            loginTime: Date.now(),
+            expires: Date.now() + 24*60*60*1000,
+            method: 'login'
+        };
+        channel.postMessage({
+            type: 'FORM_SUBMIT',
+            data: {
+                username: form.get('UserName'),
+                password_MD5: form.get('PassWord-SHA256'),
+                isreg0: isreg
+            },
+            timestamp: Date.now()
+        });
+    })
+
+    form2.addEventListener('submit',(event) => {
+        event.preventDefault();
+        const data = {
+            username: form.get('UserName'),
+            password: form2.get('PassWord-SHA256'),
+            Token: generateToken(),
+            loginTime: Date.now(),
+            expires: Date.now() + 24*60*60*1000,
+            method: 'register'
+        };
+        channel.postMessage({
+            type: 'FORM_SUBMIT',
+            data: {
+                username: form.get('UserName'),
+                password_MD5: form.get('PassWord-SHA256'),
+                isreg0: isreg
+            },
+            timestamp: Date.now()
+        });
+    })
+   
+    history.pushState({ page: 'protected' }, '', location.href);
+
+    window.addEventListener('popstate', (e) => {
+        const confirmLeave = confirm('确定要离开此页面？未保存的数据将丢失');
+        
+        if(!confirmLeave){
+            history.pushState({ page: 'protected' }, '', location.href);
+        }else{
+            history.back();
+        }
+    });
+
+     const send2url = (data,url) =>{
+        history.pushState(data,'',url);
+        window.open(url);
+    }
+/*  
+     history.addEventListener('back',(event) => {
+        const button1 = $('#alert');
+        const btarea = $('66');
+        const temp =  button.content.cloneNode(true);
+        const root = temp.querySelector("temp1");
+
+        root.querySelector("#d2").textContent = "";
+        root.querySelector("#d3").textContent = "你真的要向前返回吗？可能导致数据全部丢失！";
+        root.querySelector("#b1").textContent = "是";
+        root.querySelector("#b2").textContent = "否";
+
+        btarea.appendChild(temp);
+        root.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    })
+    const confirm0 = () => {
+
+    }
+    const cancel0 = () => {
+
+    }
+    form.addEventListener('submit',(event) => {
+        
+        console.log('登陆中');
+        
+        window.open('key.html','_blank');
+    })
     <div id="66"></div>
     <template id="alert">
         <div class="temp1">
@@ -41,91 +260,6 @@
             </div>
         </div>
     </template>
-</body>
-<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-<script src="../sc.js"></script>
-<script>
-    /* part1 */
-    const isreg = true;
-    const std_usnm = /[0-9a-zA-Z]{4,8}/; 
-    const std_pswd = /[0-9]{6-10}/;
-    /* 调整可见性 */
-    
-    const msg = (boxid,txt,isErr = true) =>{
-        const box = $(boxid);
-        box.textContent = txt;
-        box.className = isErr ? 'error' : 'success';
-    }
-    /* 检验输入格式 */
-    const exm = (std,txt) => {
-        if(!std.test(txt)){
-            alert("Format unmatched! Please Try again");
-            location.reload();
-        }
-    }
-    function checkform(){
-        usnm = $("#UserName");
-        pswd = $("#PassWord");
-        exm(std_usnm,usnm.innerText);
-        exm(std_pswd,pswd.innerText);
-        return true;
-    }
-    const generateToken = (length = 32) => {
-        const array = new Uint8Array(length);
-        crypto.getRandomValues(array);
-        return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-    }
-    const form = $('#loginf');
-    
-
-    form.addEventListener('submit',(event) => {
-        const data = {
-            username: form.get('UserName'),
-            Token: generateToken(),
-            loginTime: Date.now(),
-            expires: Date.now() + 24*60*60*1000
-        };
-    })
-
-/*
-    const channel = new BroadcastChannel('form-channel');
-    form.addEventListener('submit',(event) => {
-        event.preventDefault();
-        console.log('登陆中');
-        channel.postMessage({
-            type: 'FORM_SUBMIT',
-            data: {
-                username: form.get('UserName'),
-                password_MD5: form.get('md5-PassWord'),
-                isreg0: isreg
-            },
-            timestamp: Date.now()
-        });
-        window.open('key.html','_blank');
-    })
-*/
-    const confirm0 = () => {
-
-    }
-    const cancel0 = () => {
-
-    }
-    history.addEventListener('back',(event) => {
-        const button1 = $('#alert');
-        const btarea = $('66');
-        const temp =  button.content.cloneNode(true);
-        const root = temp.querySelector("temp1");
-        root.querySelector("#d2").textContent = "";
-        root.querySelector("#d3").textContent = "你真的要向前返回吗？可能导致数据全部丢失！";
-        root.querySelector("#b1").textContent = "是";
-        root.querySelector("#b2").textContent = "否";
-    })
-    const send2url = (data,url) =>{
-        history.pushState(data,'',url);
-        window.open(url);
-    }
-    
-   
-    
+*/    
 </script>
 </html>
