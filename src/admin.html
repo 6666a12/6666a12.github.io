@@ -57,13 +57,16 @@
     </template>
 
     <template id="page-404">
-        <h1>Page Unfound!</h1>
+        <h1>Page not found!</h1>
     </template>
     
 </body>
 <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>   
 <script src="../sc.js"></script>
 <script>
+    
+
     // Def
     const isreg = true;
     const std_usnm = /[0-9a-zA-Z]{4,8}/; 
@@ -132,6 +135,9 @@
 
     router.push('/login');
 
+    // File scanning
+    
+
     // some Function Def
     async function sha256(message) {
         const encoder = new TextEncoder();
@@ -140,17 +146,21 @@
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
+
     const show = (el,yes = true) => el.classList.toggle("hidden",!yes);
+
     const generateToken = (length = 32) => {
         const array = new Uint8Array(length);
         crypto.getRandomValues(array);array
         return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
     }
+
     const msg = (boxid,txt,isErr = true) =>{
         const box = $(boxid);
         box.textContent = txt;
         box.className = isErr ? 'error' : 'success';
     }
+
     const exm = (std,txt) => {
         if(!std.test(txt)){
             alert("Format unmatched! Please Try again");

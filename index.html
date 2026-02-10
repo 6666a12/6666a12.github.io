@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
     <link rel="stylesheet" type="text/css" href="css/m.css">
+    <link rel="stylesheet" type="text/css" href="audio.css">
 </head>
 <body>
     <img class="bg" src="pic/bg.jpg" alt="">
@@ -20,16 +21,36 @@
             <li><div class="breathe" id="clock"></div></li>
         </ul>
     </div>
+
     <!-- 这个我喜欢 -->
     <div style="margin-left: 10px;">
         <img alt="" title="我本人" src="pic/lemon.jpg" width="200" height="300" style="opacity: 0.5">
         <br>
         <p><b>欢迎来到我的网站 点击上方导航栏了解网站</b></p>
     </div>
+    
+    <!-- 音频区块  -->
+    <div id="audiom" title="music">
+        <div id="playarea">
+            <audio id="audio_player"></audio>
+            <div id="trackinfo">请选择歌曲</div>
+            <div id="audiobt">
+                <button type="button" onclick="pgdown()">👈</button>
+                <button type="button" onclick="pause()" id="pausebt">▶</button>
+                <button type="button" onclick="pgup()">👉</button>
+            </div>
+        </div>
+        <div id="trackinfo"></div>
+        <div id="progress">
+            <input placeholder="0" type="range" id="pgslider" min="0" max="100" value="0" oninput="seekaudio(this.value)">
+            <span id="pgtxt">0: 00 / 0: 00</span>
+        </div>
+    </div>
+
     <!-- 底部小图标 -->
     <div id="bottomm">
         <ul class="bottom-bar">
-            <li><a style="text-decoration: none;">关注主播喵</a></li>
+            <li><a>关注主播喵</a></li>
             <li><img src="pic/trakov-logo.webp" alt="" width="60" height="25"></li>
             <li><img src="pic/Dynamix_logo.webp" alt="" width="25" height="25"></li>
         </ul>
@@ -38,4 +59,96 @@
     <a class="bt" href="src/admin.html">login</a>
 </body>
 <script src="sc.js"></script>
+<script>
+    let statu = false;
+    let list = [
+        {artist: "Feryquitous", trackname: "愚か者の賢人論", src: "audio/Feryquitous - 愚か者の賢人論.mp3"},
+        {artist: "Dachs", trackname: "Holy Night,Silent Night", src: "audio/Dachs - Holy Night, Silent Night.mp3"},
+        {artist: "Dachs", trackname: "Mother Earth (Original Mix)", src: "audio/Mother Earth (Original Mix) - Dachs"},
+        {artist: "DJ TOTTO", trackname: "童話回廊", src: "audio/DJ TOTTO - 童話回廊"},
+        {artist: "polysha", trackname: "Where The Spirits Go on", src: "audio/polysha - Where The Spirits Go on.mp3"}
+    ];
+    let pos = 0;
+    const len = list.length - 1;
+
+    const audio = document.getElementById("audio_player");
+    const pgslider = document.getElementById("pgslider");
+    const pgtxt = document.getElementById("pgtxt");
+    const pausebt = document.getElementById("pausebt");
+    const trackinfo = document.getElementById("trackinfo");
+
+    const GetCurrentTrack = () => {return list[pos].src;}
+    const Currentname = () => {return list[pos].artist+ " - "+ list[pos].trackname;}
+
+    const formatTime = (seconds) => {
+        if (isNaN(seconds)) return "0:00";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function loadTrack(index) {
+        if (index < 0 || index >= list.length) return;
+        pos = index;
+        audio.src = list[pos].src;
+        trackinfo.textContent = Currentname();
+        pgslider.value = 0;
+        pgtxt.textContent = "0:00 / 0:00";
+        if (statu) {
+            audio.play().catch(e => console.log("自动播放被阻止:", e));
+        }
+    }
+
+    const pgdn = () => {
+        audio.pause();statu = false;
+        if(pos == 0)pos = len;
+        else pos--;
+        loadTrack(pos);
+    }
+
+    const pgup = () => {
+        audio.pause();statu = false;
+        if(pos == len)pos = 0;
+        else pos++;
+        loadTrack(pos);
+    }
+
+    const pause = () => {
+        if(statu){
+            pausebt.innerText = "▶";
+            audio.pause();
+        }else{
+            if(!audio.src){
+                loadTrack(pos);
+            }
+            audio.play();
+            pausebt.innerText = "⏸"; 
+        }
+        statu = !statu;
+    }
+
+    const seekaudio = (percent) => {
+        if(!audio.duration)return;
+        const time = audio.duration * (percent / 100);
+        audio.currentTime = time;
+    }
+
+    const setvolume = (percent) => {audio.volume = percent;}
+
+    audio.ontimeupdate = () => {
+        if(!audio.duration)return;
+
+        const percent1 = audio.currentTime / audio.duration * 100;
+        pgslider.value = percent1 || 0;
+
+        const current = formatTime(audio.currentTime);
+        const total = formatTime(audio.duration || 0);
+        pgtxt.textContent = `${current} / ${total}`;
+    }
+
+    audio.onended = () => {pgup();}
+    audio.onloadedmetadata = () => {pgtxt.textContent = `0:00 / ${formatTime(audio.duration)}`;}
+    
+    loadTrack(pos);
+</script>
 </html>

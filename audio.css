@@ -1,0 +1,30 @@
+#audiom{
+    right: 10px;
+    bottom: 35px;
+    position: fixed;
+    width: 215px;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#trackinfo{
+    display: inline-block;
+    animation: scroll 3.5s linear infinite;
+    padding-left: 100%;                /* 从右侧进入 */
+}   
+@keyframes scroll{
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+#audiobt button{
+    padding: 3px 6px;
+    margin: 0px 5px;
+}
+
+#trackinfo:hover{animation-play-state: paused;}
+#audiom *{margin-bottom: 5px;}
+#audiobt{margin-left: 20%;}
+#playarea{margin-bottom: -27px;}
+
