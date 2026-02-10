@@ -1,4 +1,8 @@
 *{box-sizing: border-box;text-decoration: none;}
+#suki,#homee{margin-left: 10px;}
+#lm{opacity: 0.5;}
+#wife{opacity: 0.25;}
+
 body{
     margin: 0;
     counter-reset: a1,a2;       
@@ -117,12 +121,4 @@ body{
 .breathe{animation: breathe 1s infinite;}
 .flipInY{animation: flipInY 4s;}
 .flipInX{animation: flipInX 4s;}
-.day{
-
-}
-.night{
-
-}
-.undo{
-    color: aquamarine;
-}
+.undo{color: aquamarine;}

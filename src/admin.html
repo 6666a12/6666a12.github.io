@@ -10,7 +10,7 @@
 </head>
 <body onload="main()">
     <div class="ed" id="edit">
-        <img class="bg" style="opacity: 0.25" alt="" src="../pic/yz.jpg">
+        <img class="bg" id="wife0" alt="" src="../pic/yz.jpg">
     </div>  
     <div id="topm">
         <ul class="topmenu">
@@ -64,9 +64,8 @@
 <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>   
 <script src="../sc.js"></script>
+<script src="../Components/Hash.js"></script>
 <script>
-    
-
     // Def
     const isreg = true;
     const std_usnm = /[0-9a-zA-Z]{4,8}/; 
@@ -75,54 +74,7 @@
     const form2 = $('#regf');
     const channel = new BroadcastChannel('form-channel');
     
-    // Hash Router Setup
-    class HashRouter{
-        constructor(routes){
-            this.routes = routes;
-            this.CurrentPage = null;
-            this.isdirty = false;
-
-            window.addEventListener('hashchange' , (event) => {
-                if(this.isdirty && !confirm("数据未保存,确认退出?")){
-                    event.preventDefault();
-                    history.pushState(null,'',event.oldURL);
-                    return;
-                }
-                this.render();
-            });
-
-            window.addEventListener('DOMContentLoaded' , () => this.render());
-        }
-
-        getPath(){return location.hash.slice(1) || '/';}
-        push(path){location.hash = path;}
-        setdirty(flag){this.isdirty = flag;}
-
-        render(){
-            let path = this.getPath();
-            const handler = this.routes[path] || this.routes['*'];
-
-            handler?.(path);
-        }
-    }
-
-    const RenderPage = (TemplateId,setupFn) => {
-        const app = document.getElementById('app');
-        
-        // 蛋出
-        app.style.opacity = '0';
-        app.style.transition = 'opacity 0.2s';
-
-        setTimeout(() =>{
-            const template = document.getElementById(TemplateId);
-            app.innerHTML = '';
-            app.appendChild(template.content.cloneNode(true));
-            setupFn?.();
-
-            app.style.opacity = '1';
-        },200);
-     
-    }
+    
     
     const routes = {
         '/login' : () => RenderPage('page-login'),
@@ -215,19 +167,7 @@
             timestamp: Date.now()
         });
     })
-   
-    history.pushState({ page: 'protected' }, '', location.href);
-
-    window.addEventListener('popstate', (e) => {
-        const confirmLeave = confirm('确定要离开此页面？未保存的数据将丢失');
-        
-        if(!confirmLeave){
-            history.pushState({ page: 'protected' }, '', location.href);
-        }else{
-            history.back();
-        }
-    });
-
+    
      const send2url = (data,url) =>{
         history.pushState(data,'',url);
         window.open(url);
