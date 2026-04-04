@@ -1,29 +1,42 @@
 #audiom{
     right: 10px;
-    bottom: 35px;
+    bottom: 40px;
     position: fixed;
-    width: 215px;
+    width: 300px;
     overflow: hidden;
     white-space: nowrap;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border: 2px solid rgb(245, 179, 132);
+    border-radius: 12px;
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
 #trackinfo{
     display: inline-block;
-    animation: scroll 3.5s linear infinite;
-    padding-left: 100%;                /* 从右侧进入 */
+    animation: scroll 4s linear infinite;
+    padding-left: 100%;
+    text-align: center;
 }   
 @keyframes scroll{
     0% { transform: translateX(0); }
     100% { transform: translateX(-100%); }
 }
 
-#audiobt button{
-    padding: 3px 6px;
-    margin: 0px 5px;
+#audiobt{
+    text-align: center;
+    margin: 8px 0;
+    margin-bottom: 4px;
 }
 
+#audiobt button{
+    padding: 5px 10px;
+    margin: 0 5px;
+    margin-bottom: 0;
+}
+
+#progress{text-align: center;}
+#pgslider{width: 90%;}
 #trackinfo:hover{animation-play-state: paused;}
-#audiom *{margin-bottom: 5px;}
-#audiobt{margin-left: 20%;}
-#playarea{margin-bottom: -27px;}
