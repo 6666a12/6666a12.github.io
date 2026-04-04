@@ -1,0 +1,41 @@
+/* ============================================
+   Minecraft/Hobbies Page Styles
+   爱好制作页面专用样式 (minecraft.html)
+   ============================================ */
+
+/* 分类侧边栏 */
+#sort {
+    width: 90px;
+    list-style-type: none;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    margin-top: 10px;
+}
+
+#sort li button {
+    margin: 5px 10px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size: 20px;
+    border-style: none;
+    display: inline-block;
+    text-align: center;
+    width: 70px;
+    padding: 8px;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.4s linear;
+}
+
+#sort button:hover {
+    background-color: bisque;
+    transform: translateY(-1px);
+}
+
+/* 内容区域 */
+#app {
+    margin-left: 95px;
+    margin-top: 13px;
+    position: fixed;
+}

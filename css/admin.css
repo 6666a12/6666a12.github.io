@@ -1,0 +1,265 @@
+/* ============================================
+   Admin/Authentication Page Styles
+   认证页面专用样式 (admin.html)
+   ============================================ */
+
+/* 应用容器 */
+#app {
+    min-height: 400px;
+    padding: 20px;
+}
+
+/* 消息提示 */
+.message {
+    margin: 10px 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    animation: slideIn 0.3s ease;
+}
+
+.message.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+/* 登录/注册表单容器 */
+#login,
+#register {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+#login h1,
+#register h1 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+#login p,
+#register p {
+    margin: 16px 0 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+/* 输入框 */
+#login input,
+#register input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+#login input:focus,
+#register input:focus {
+    outline: none;
+    border-color: #2196F3;
+}
+
+/* 按钮 */
+#login button,
+#register button {
+    width: 100%;
+    padding: 12px;
+    margin: 12px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* 主要按钮 */
+#login button[type="submit"],
+#register button[type="submit"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+#login button[type="submit"]:hover,
+#register button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 次要按钮 */
+#login button[type="button"],
+#register button[type="button"] {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+#login button[type="button"]:hover,
+#register button[type="button"]:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* 禁用状态 */
+#login button:disabled,
+#register button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ============================================
+   用户中心样式
+   ============================================ */
+
+#page-user {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+#page-user h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.user-info {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.user-info p {
+    margin: 12px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+}
+
+.user-info p:last-child {
+    border-bottom: none;
+}
+
+.user-info label {
+    font-weight: 600;
+    color: #555;
+}
+
+.user-info span {
+    color: #333;
+    font-family: monospace;
+}
+
+.logout-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+/* ============================================
+   加载动画
+   ============================================ */
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   工具类
+   ============================================ */
+
+.hidden {
+    display: none !important;
+}
+
+/* ============================================
+   404 页面
+   ============================================ */
+
+#page-404 {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+#page-404 h1 {
+    font-size: 48px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+#page-404 button {
+    padding: 12px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#page-404 button:hover {
+    background: #5a6fd6;
+    transform: translateY(-2px);
+}

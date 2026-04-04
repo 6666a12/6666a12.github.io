@@ -1,13 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>更新日志</title>
     <link rel="stylesheet" type="text/css" href="../css/m.css">
+    <link rel="stylesheet" type="text/css" href="../css/auth.css">
 </head>
 <body>
     <img class="bg" src="../pic/bg.jpg" alt="">
+    <!-- 全局认证状态 -->
+    <div id="global-auth-status" class="auth-status">
+        <span>加载中...</span>
+    </div>
     <!-- 顶端目录 -->
     <div>
         <ul class="topmenu">
@@ -15,7 +20,7 @@
             <li><a href="../index.html">主页</a></li>
             <li><a href="home.html">网站简介</a></li>
             <li><a href="articles.html">艺术鉴赏</a></li>
-            <li><a href="minecraft.html">模组制作</a></li>
+            <li><a href="minecraft.html">爱好制作</a></li>
             <li><a href="#blog" class="undo" title="没做好">随如🖊</a></li>
             <li><a href="#donation" class="undo" title="没做好">投喂</a></li>
             <li><div class="breathe" id="clock"></div></li>
@@ -23,16 +28,36 @@
     </div>
     <!-- 主要内容 -->
     <div id="update">
+        <b>2026.4.4</b> --- 添加完整的用户认证系统，支持全局登录状态同步<br>
         <b>2026.2.10</b> --- 添加了音乐播放功能<br>
     </div>
     <!-- 底部小图标 -->
     <div id="bottomm">
         <ul class="bottom-bar">
-            <li><a>关注主播喵</a></li>
-            <li><img src="pic/trakov-logo.webp" alt="" width="60" height="25"></li>
-            <li><img src="pic/Dynamix_logo.webp" alt="" width="25" height="25"></li>
+            <li><a href="https://space.bilibili.com/687368009">关注主播喵</a></li>
+            <li><img src="../pic/trakov-logo.webp" alt="" width="60" height="25"></li>
+            <li><img title="dead game" src="../pic/Dynamix_logo.webp" alt="" width="25" height="25"></li>
         </ul>
     </div>
 </body>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../components/auth.js"></script>
 <script src="../components/sc.js"></script>
+<script>
+    function updateAuthStatus(user) {
+        const container = document.getElementById('global-auth-status');
+        if (!container) return;
+        if (user) {
+            container.classList.add('logged-in');
+            container.innerHTML = `<span>👤</span><span class="auth-email">${user.email}</span><a href="admin.html#/user">用户中心</a><button onclick="handleLogout()">退出</button>`;
+        } else {
+            container.classList.remove('logged-in');
+            container.innerHTML = `<span>👋 访客</span><a href="admin.html#/login">登录</a>`;
+        }
+    }
+    async function handleLogout() {
+        try { await Auth.logout(); updateAuthStatus(null); } catch (e) { console.error(e); }
+    }
+    Auth.subscribe(updateAuthStatus);
+</script>
 </html>

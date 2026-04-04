@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
     <link rel="stylesheet" type="text/css" href="css/m.css">
     <link rel="stylesheet" type="text/css" href="css/audio.css">
+    <link rel="stylesheet" type="text/css" href="css/auth.css">
 </head>
 <body>
     <img class="bg" src="pic/bg.jpg" alt="">
+    <!-- 全局认证状态 -->
+    <div id="global-auth-status" class="auth-status">
+        <span>加载中...</span>
+    </div>
     <!-- 顶端目录 -->
     <div>
         <ul class="topmenu">
@@ -16,7 +21,7 @@
             <li><a href="#index" class="highlight">主页</a></li>
             <li><a href="src/home.html">网站简介</a></li>
             <li><a href="src/articles.html">艺术鉴赏</a></li>
-            <li><a href="src/minecraft.html">模组制作</a></li>
+            <li><a href="src/minecraft.html">爱好制作</a></li>
             <li><a href="#blog" class="undo" title="没做好">随如🖊</a></li>
             <li><a href="#donation" class="undo" title="没做好">投喂</a></li>
             <li><div class="breathe" id="clock"></div></li>
@@ -61,6 +66,10 @@
     <!-- 神秘小按钮 -->
     <a class="bt" href="src/admin.html">login</a>
 </body>
+<!-- Supabase SDK -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- 全局认证模块 -->
+<script src="components/auth.js"></script>
 <script src="components/sc.js"></script>
 <script>
     let statu = false;
@@ -153,5 +162,41 @@
     audio.onloadedmetadata = () => {pgtxt.textContent = `0:00 / ${formatTime(audio.duration)}`;}
     
     loadTrack(pos);
+    
+    // 更新全局认证状态显示
+    function updateAuthStatus(user) {
+        const container = document.getElementById('global-auth-status');
+        if (!container) return;
+        
+        if (user) {
+            container.classList.add('logged-in');
+            container.innerHTML = `
+                <span>👤</span>
+                <span class="auth-email" title="${user.email}">${user.email}</span>
+                <a href="src/admin.html#/user">用户中心</a>
+                <button onclick="handleLogout()">退出</button>
+            `;
+        } else {
+            container.classList.remove('logged-in');
+            container.innerHTML = `
+                <span>👋 访客</span>
+                <a href="src/admin.html#/login">登录 / 注册</a>
+            `;
+        }
+    }
+    
+    async function handleLogout() {
+        try {
+            await Auth.logout();
+            updateAuthStatus(null);
+        } catch (e) {
+            console.error('退出失败:', e);
+        }
+    }
+    
+    // 订阅认证状态变化
+    Auth.subscribe((user) => {
+        updateAuthStatus(user);
+    });
 </script>
 </html>

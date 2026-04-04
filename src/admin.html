@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log in</title>
+    <title>用户认证</title>
     <link rel="stylesheet" type="text/css" href="../css/m.css">
     <link rel="stylesheet" type="text/css" href="../css/log-in.css">
+    <link rel="stylesheet" type="text/css" href="../css/admin.css">
 </head>
-<body onload="main()">
+<body>
     <div class="ed" id="edit">
         <img class="bg" id="wife0" alt="" src="../pic/yz.jpg">
     </div>  
@@ -15,201 +16,345 @@
         <ul class="topmenu">
             <li><img src="../pic/stream-pig.gif" width="40" height="40" alt=""></li>
             <li><a href="../index.html">主页</a></li>
+            <li><a href="../src/home.html">网站简介</a></li>
             <li><div id="clock" class="breathe"></div></li>
         </ul>
     </div>
 
-    <!-- Where the pages are rendered -->
-    <div id="app"></div>
+    <!-- 页面内容容器 -->
+    <div id="app">
+        <div style="text-align: center; padding: 60px;">
+            <div class="loading-spinner" style="border-color: #667eea; border-top-color: transparent;"></div>
+            <p>加载中...</p>
+        </div>
+    </div>
 
+    <!-- 登录模板 -->
     <template id="page-login">
         <div id="login">
-            <form id='loginf' onsubmit="return checkform()">
-                <h1><b>Login:</b></h1>
-                <p><b>UserName:</b></p>
-                <input placeholder="UserName" type="text" title="0" id="UserName" name="username" required>
-                <p><b>PassWord:</b></p>
-                <input placeholder="PassWord" type="password" title="0" id="PassWord" required><br>
-                <input type="hidden" id="PassWord-SHA256" name="password_SHA256">
-                <button type="submit">Login</button>
-                <button type="button" onclick="router.push('/register')">Go to Reg</button>              
+            <form id="loginf" onsubmit="return handleLogin(event)">
+                <h1>🔐 用户登录</h1>
+                <div id="login-message"></div>
+                <p>邮箱</p>
+                <input placeholder="your@email.com" type="email" id="login-email" name="email" required autocomplete="email">
+                <p>密码</p>
+                <input placeholder="请输入密码" type="password" id="login-password" name="password" required minlength="6" autocomplete="current-password"><br>
+                <button type="submit" id="login-submit">
+                    <span class="btn-text">登录</span>
+                </button>
+                <button type="button" onclick="router.push('/register')">创建新账户</button>              
             </form>
         </div>
     </template>
 
+    <!-- 注册模板 -->
     <template id="page-register">
         <div id="register">
-            <form id='regf' onsubmit="return checkform()">
-                <h1><b>Register:</b></h1>
-                <p><b>UserName:</b></p>
-                <input placeholder="UserName" type="text" title="0" id="UserName" name="username" required>
-                <p><b>PassWord:</b></p>
-                <input placeholder="PassWord" type="password" title="0" id="PassWord" required><br>
-                <input type="hidden" id="PassWord-SHA256" name="password_SHA256">
-                <button type="submit">Register</button>
-                <button type="button" onclick="router.push('/login')">Go to Login</button>              
+            <form id="regf" onsubmit="return handleRegister(event)">
+                <h1>📝 用户注册</h1>
+                <div id="register-message"></div>
+                <p>邮箱</p>
+                <input placeholder="your@email.com" type="email" id="reg-email" name="email" required autocomplete="email">
+                <p>密码</p>
+                <input placeholder="至少6个字符" type="password" id="reg-password" name="password" required minlength="6" autocomplete="new-password">
+                <p>确认密码</p>
+                <input placeholder="再次输入密码" type="password" id="reg-confirm" name="confirm" required minlength="6" autocomplete="new-password"><br>
+                <button type="submit" id="reg-submit">
+                    <span class="btn-text">注册</span>
+                </button>
+                <button type="button" onclick="router.push('/login')">已有账户？去登录</button>              
             </form>
         </div>
     </template>
     
+    <!-- 用户中心模板 -->
     <template id="page-user">
-
+        <div id="page-user">
+            <h2>👤 用户中心</h2>
+            <div id="user-message"></div>
+            <div class="user-info">
+                <p><label>邮箱:</label> <span id="user-email">-</span></p>
+                <p><label>用户ID:</label> <span id="user-id">-</span></p>
+                <p><label>本次登录时间:</label> <span id="user-login-time">-</span></p>
+                <p><label>已登录时长:</label> <span id="user-session-duration">-</span></p>
+                <p><label>剩余有效时间:</label> <span id="user-remaining-time" class="remaining-time">-</span></p>
+                <p><label>上次登录:</label> <span id="user-last-signin">-</span></p>
+                <p><label>账户创建:</label> <span id="user-created">-</span></p>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()" id="logout-btn">
+                <span class="btn-text">退出登录</span>
+            </button>
+        </div>
     </template>
 
+    <!-- 404 模板 -->
     <template id="page-404">
-        <h1>Page not found!</h1>
+        <div id="page-404">
+            <h1>😕 404</h1>
+            <p>页面未找到</p>
+            <button onclick="router.push('/login')">返回登录</button>
+        </div>
     </template>
     
 </body>
-<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>   
+<!-- Supabase SDK -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- 全局认证模块 -->
+<script src="../components/auth.js"></script>
+<!-- 时钟组件 -->
 <script src="../components/sc.js"></script>
+<!-- 路由组件 -->
 <script src="../Components/Hash.js"></script>
+
 <script>
-    // Def
-    const isreg = true;
-    const std_usnm = /[0-9a-zA-Z]{4,8}/; 
-    const std_pswd = /[0-9]{6,10}/;
-    const form1 = $('#loginf');
-    const form2 = $('#regf');
-    const channel = new BroadcastChannel('form-channel');
+    // ============================================
+    // Supabase 配置
+    // ============================================
+    const SUPABASE_URL = 'https://diblhuossmbwbwylmnye.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_hwUuS2OHWH_OPkAExyQUYA_uqTdNLW6';
     
+    // 初始化 Supabase 客户端
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    
+    // ============================================
+    // 路由配置
+    // ============================================
     const routes = {
-        '/login' : () => RenderPage('page-login'),
-        '/register' : () => RenderPage('page-register'),
-        '/user' : () => RenderPage('page-user'),
-        '*' : () => RenderPage('page-404')
-    }
+        '/login': () => {
+            if (Auth.isLoggedIn()) {
+                router.push('/user');
+                return;
+            }
+            RenderPage('page-login');
+        },
+        '/register': () => {
+            if (Auth.isLoggedIn()) {
+                router.push('/user');
+                return;
+            }
+            RenderPage('page-register');
+        },
+        '/user': () => {
+            if (!Auth.isLoggedIn()) {
+                router.push('/login');
+                return;
+            }
+            RenderPage('page-user', setupUserPage);
+        },
+        '*': () => RenderPage('page-404')
+    };
 
     const router = new HashRouter(routes);
 
-    router.push('/login');
-
-    // File scanning
-    
-
-    // some Function Def
-    async function sha256(message) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    const show = (el,yes = true) => el.classList.toggle("hidden",!yes);
-
-    const generateToken = (length = 32) => {
-        const array = new Uint8Array(length);
-        crypto.getRandomValues(array);array
-        return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-    }
-
-    const msg = (boxid,txt,isErr = true) =>{
-        const box = $(boxid);
-        box.textContent = txt;
-        box.className = isErr ? 'error' : 'success';
-    }
-
-    const exm = (std,txt) => {
-        if(!std.test(txt)){
-            alert("Format unmatched! Please Try again");
-            location.reload();
+    // ============================================
+    // 页面初始化
+    // ============================================
+    async function main() {
+        // 覆盖 auth.js 中的 supabase 配置
+        window.Auth._supabase = supabaseClient;
+        
+        // 等待认证初始化
+        await Auth.init();
+        
+        // 设置初始路由
+        if (!location.hash) {
+            router.push('/login');
+        } else {
+            router.render();
         }
     }
-    const checkform = () => {
-        usnm = $("#UserName");
-        pswd = $("#PassWord");
-        exm(std_usnm,usnm.innerText);
-        exm(std_pswd,pswd.innerText);
-        return true;
+
+    // ============================================
+    // 认证处理函数
+    // ============================================
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const submitBtn = document.getElementById('login-submit');
+        
+        setButtonLoading(submitBtn, true, '登录中...');
+        
+        try {
+            // 使用 Auth 模块的登录方法，会自动记录登录时间
+            await Auth.login(email, password);
+            
+            showMessage('login-message', '✅ 登录成功！', false);
+            
+            setTimeout(() => {
+                router.push('/user');
+            }, 500);
+            
+        } catch (error) {
+            console.error('登录失败:', error);
+            showMessage('login-message', '❌ ' + getErrorMessage(error), true);
+            setButtonLoading(submitBtn, false, '登录');
+        }
+        
+        return false;
+    }
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const confirm = document.getElementById('reg-confirm').value;
+        const submitBtn = document.getElementById('reg-submit');
+        
+        // 验证密码
+        if (password !== confirm) {
+            showMessage('register-message', '❌ 两次输入的密码不一致！', true);
+            return false;
+        }
+        
+        if (password.length < 6) {
+            showMessage('register-message', '❌ 密码至少需要6个字符！', true);
+            return false;
+        }
+        
+        setButtonLoading(submitBtn, true, '注册中...');
+        
+        try {
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password
+            });
+            
+            if (error) throw error;
+            
+            showMessage('register-message', '✅ 注册成功！请检查邮箱验证账户。', false);
+            event.target.reset();
+            
+            setTimeout(() => {
+                router.push('/login');
+            }, 2000);
+            
+        } catch (error) {
+            console.error('注册失败:', error);
+            showMessage('register-message', '❌ ' + getErrorMessage(error), true);
+            setButtonLoading(submitBtn, false, '注册');
+        }
+        
+        return false;
+    }
+
+    async function handleLogout() {
+        const btn = document.getElementById('logout-btn');
+        setButtonLoading(btn, true, '退出中...');
+        
+        try {
+            await Auth.logout();
+            router.push('/login');
+        } catch (error) {
+            console.error('退出失败:', error);
+            showMessage('user-message', '❌ 退出失败: ' + error.message, true);
+            setButtonLoading(btn, false, '退出登录');
+        }
+    }
+
+    // ============================================
+    // 用户中心设置
+    // ============================================
+    let sessionTimer = null;
+    
+    function setupUserPage() {
+        const user = Auth.getUser();
+        if (!user) return;
+        
+        document.getElementById('user-email').textContent = user.email || '-';
+        document.getElementById('user-id').textContent = user.id || '-';
+        
+        // 本次登录时间
+        const loginTime = Auth.getLoginTime();
+        document.getElementById('user-login-time').textContent = loginTime 
+            ? new Date(loginTime).toLocaleString('zh-CN')
+            : '-';
+        
+        // 上次登录（来自 Supabase）
+        document.getElementById('user-last-signin').textContent = user.last_sign_in_at 
+            ? new Date(user.last_sign_in_at).toLocaleString('zh-CN')
+            : '-';
+        
+        document.getElementById('user-created').textContent = user.created_at 
+            ? new Date(user.created_at).toLocaleString('zh-CN')
+            : '-';
+        
+        // 更新时长显示
+        updateSessionDuration();
+        
+        // 每秒更新时长
+        if (sessionTimer) clearInterval(sessionTimer);
+        sessionTimer = setInterval(updateSessionDuration, 1000);
     }
     
-    form1.addEventListener('submit',(event) => {
-        event.preventDefault();
-        const data = {
-            username: form.get('UserName'),
-            Token: generateToken(),
-            loginTime: Date.now(),
-            expires: Date.now() + 24*60*60*1000,
-            method: 'login'
-        };
-        channel.postMessage({
-            type: 'FORM_SUBMIT',
-            data: {
-                username: form.get('UserName'),
-                password_MD5: form.get('PassWord-SHA256'),
-                isreg0: isreg
-            },
-            timestamp: Date.now()
-        });
-    })
-
-    form2.addEventListener('submit',(event) => {
-        event.preventDefault();
-        const data = {
-            username: form.get('UserName'),
-            password: form2.get('PassWord-SHA256'),
-            Token: generateToken(),
-            loginTime: Date.now(),
-            expires: Date.now() + 24*60*60*1000,
-            method: 'register'
-        };
-        channel.postMessage({
-            type: 'FORM_SUBMIT',
-            data: {
-                username: form.get('UserName'),
-                password_MD5: form.get('PassWord-SHA256'),
-                isreg0: isreg
-            },
-            timestamp: Date.now()
-        });
-    })
+    function updateSessionDuration() {
+        // 已登录时长
+        const durationEl = document.getElementById('user-session-duration');
+        if (durationEl) {
+            durationEl.textContent = Auth.getSessionDuration();
+        }
+        
+        // 剩余时间
+        const remainingEl = document.getElementById('user-remaining-time');
+        if (remainingEl) {
+            const remaining = Auth.getRemainingTime();
+            const formatted = Auth.getRemainingTimeFormatted();
+            remainingEl.textContent = formatted;
+            
+            // 根据剩余时间改变颜色
+            remainingEl.classList.remove('warning', 'danger');
+            if (remaining < 30 * 60 * 1000) { // 少于30分钟
+                remainingEl.classList.add('danger');
+            } else if (remaining < 2 * 60 * 60 * 1000) { // 少于2小时
+                remainingEl.classList.add('warning');
+            }
+        }
+    }
     
-     const send2url = (data,url) =>{
-        history.pushState(data,'',url);
-        window.open(url);
-    }
-/*  
-     history.addEventListener('back',(event) => {
-        const button1 = $('#alert');
-        const btarea = $('66');
-        const temp =  button.content.cloneNode(true);
-        const root = temp.querySelector("temp1");
+    // 页面卸载时清理定时器
+    window.addEventListener('beforeunload', () => {
+        if (sessionTimer) clearInterval(sessionTimer);
+    });
 
-        root.querySelector("#d2").textContent = "";
-        root.querySelector("#d3").textContent = "你真的要向前返回吗？可能导致数据全部丢失！";
-        root.querySelector("#b1").textContent = "是";
-        root.querySelector("#b2").textContent = "否";
-
-        btarea.appendChild(temp);
-        root.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    })
-    const confirm0 = () => {
-
-    }
-    const cancel0 = () => {
-
-    }
-    form.addEventListener('submit',(event) => {
+    // ============================================
+    // 工具函数
+    // ============================================
+    function showMessage(elementId, text, isError) {
+        const box = document.getElementById(elementId);
+        if (!box) return;
         
-        console.log('登陆中');
-        
-        window.open('key.html','_blank');
-    })
-    <div id="66"></div>
-    <template id="alert">
-        <div class="temp1">
-            <div class="bt_bg" id="d1"></div>
-            <div class="bt_div" id="d2">
-                <div class="bt_txt" id="d3"></div>
-                <button class="bt_bt" id="b1" onclick="confirm0()"></button>
-                <button class="bt_bt" id="b2" onclick="cancel0()"></button>
-            </div>
-        </div>
-    </template>
-*/    
+        box.textContent = text;
+        box.className = 'message ' + (isError ? 'error' : 'success');
+        box.style.display = 'block';
+    }
+
+    function setButtonLoading(btn, loading, text) {
+        if (loading) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="loading-spinner"></span>${text}`;
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = `<span class="btn-text">${text}</span>`;
+        }
+    }
+
+    function getErrorMessage(error) {
+        const messages = {
+            'Invalid login credentials': '邮箱或密码错误',
+            'Email not confirmed': '邮箱尚未验证，请检查邮箱',
+            'User already registered': '该邮箱已注册',
+            'Password should be at least 6 characters': '密码至少需要6个字符',
+            'Unable to validate email address: invalid format': '邮箱格式不正确',
+            'AuthApiError': '认证失败，请稍后重试',
+            'Network error': '网络错误，请检查网络连接',
+            'Email rate limit exceeded': '请求过于频繁，请稍后再试'
+        };
+        return messages[error.message] || error.message || '发生错误，请重试';
+    }
+
+    // 启动应用
+    main();
 </script>
 </html>

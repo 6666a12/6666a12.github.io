@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人作品</title>
+    <link rel="stylesheet" type="text/css" href="../css/m.css">
+    <link rel="stylesheet" type="text/css" href="../css/minecraft.css">
+    <link rel="stylesheet" type="text/css" href="../css/auth.css">
+</head>
+<body>
+    <img class="bg" src="../pic/bg.jpg" alt="">
+    <!-- 全局认证状态 -->
+    <div id="global-auth-status" class="auth-status">
+        <span>加载中...</span>
+    </div>
+    <div>
+        <ul class="topmenu">
+            <li><img src="../pic/stream-pig.gif" width="40" height="40" alt=""></li>
+            <li><a href="../index.html">主页</a></li>
+            <li><a href="home.html">网站简介</a></li>
+            <li><a href="articles.html">艺术鉴赏</a></li>
+            <li><a href="minecraft.html">爱好制作</a></li>
+            <li><a href="#blog" class="undo" title="没做好">随如🖊</a></li>
+            <li><a href="#donation" class="undo" title="没做好">投喂</a></li>
+            <li><div class="breathe" id="clock"></div></li>
+        </ul>
+    </div>
+
+    <div id="app">Hash Router loads in successfully!</div>
+
+    <div>
+        <ul id="sort">
+            <li><b><button type="button" onclick="router.push('/Charts')">Charts</button><br></b></li>
+            <li><b><button type="button" class="undo" onclick="router.push('/Mods')">Mods</button><br></b></li>
+            <li><b><button type="button" class="undo" onclick="router.push('/Music')">Music</button></b></li>
+        </ul>
+    </div>
+
+    
+    <template id="page-404"></template>
+    <template id="page-mod"></template>
+    <template id="page-music"></template>
+
+    <template id="page-charts">
+        <ul>
+            <li><a href="documents/" download></a></li>
+            <li><a href=""></a></li>
+            <li><a href=""></a></li>
+            <li><a href=""></a></li>
+            <li><a href=""></a></li>
+            <li><a href=""></a></li>
+        </ul>
+    </template>
+
+</body>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../components/auth.js"></script>
+<script src="../components/sc.js"></script>
+<script src="../components/Hash.js"></script>
+<script>
+    // 认证状态显示
+    function updateAuthStatus(user) {
+        const container = document.getElementById('global-auth-status');
+        if (!container) return;
+        if (user) {
+            container.classList.add('logged-in');
+            container.innerHTML = `<span>👤</span><span class="auth-email">${user.email}</span><a href="admin.html#/user">用户中心</a><button onclick="handleLogout()">退出</button>`;
+        } else {
+            container.classList.remove('logged-in');
+            container.innerHTML = `<span>👋 访客</span><a href="admin.html#/login">登录</a>`;
+        }
+    }
+    async function handleLogout() {
+        try { await Auth.logout(); updateAuthStatus(null); } catch (e) { console.error(e); }
+    }
+    Auth.subscribe(updateAuthStatus);
+
+    // 路由
+    let routes = {
+        '/Charts' : () => RenderPage('page-charts'),
+        '/Mods' : () => RenderPage('page-mods'),
+        '/Music' : () => RenderPage('page-music'),
+        '*' : () => RenderPage('page-404')
+    }
+
+    let router = new HashRouter(routes);
+    router.push('*');
+
+    const reloadhash = () => {
+        if(router.destroy())delete router;
+        router = new HashRouter(routes);
+        router.push('list');
+    }
+</script>
+</html>
