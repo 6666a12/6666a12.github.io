@@ -9,10 +9,6 @@
 </head>
 <body>
     <img class="bg" src="../pic/bg.jpg" alt="">
-    <!-- 全局认证状态 -->
-    <div id="global-auth-status" class="auth-status">
-        <span>加载中...</span>
-    </div>
     <!-- top menu -->
     <div id="topm">
         <ul class="topmenu">
@@ -24,6 +20,10 @@
             <li><a href="#blog" class="undo" title="没做好">随如🖊</a></li>
             <li><a href="#donation" class="undo" title="没做好">投喂</a></li>
             <li><div class="breathe" id="clock"></div></li>
+            <!-- 认证状态 -->
+            <li class="auth-item" id="auth-item">
+                <span class="loading-text">...</span>
+            </li>
         </ul>
     </div>
     <!-- 界面 -->
@@ -46,14 +46,14 @@
 <script>
     // 认证状态显示
     function updateAuthStatus(user) {
-        const container = document.getElementById('global-auth-status');
+        const container = document.getElementById('auth-item');
         if (!container) return;
         if (user) {
             container.classList.add('logged-in');
-            container.innerHTML = `<span>👤</span><span class="auth-email">${user.email}</span><a href="admin.html#/user">用户中心</a><button onclick="handleLogout()">退出</button>`;
+            container.innerHTML = `<a href="admin.html#/user" title="${user.email}">👤 <span class="auth-email">${user.email}</span></a><button onclick="handleLogout()" title="退出">×</button>`;
         } else {
             container.classList.remove('logged-in');
-            container.innerHTML = `<span>👋 访客</span><a href="admin.html#/login">登录</a>`;
+            container.innerHTML = `<a href="admin.html#/login">登录</a>`;
         }
     }
     async function handleLogout() {

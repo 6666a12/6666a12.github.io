@@ -70,6 +70,9 @@ body{
     transition-duration: 0.4s ;
     transition-timing-function: linear;    
 }
+#clock{
+    margin-top: 5px;
+}
 .bottom-bar{
     position: fixed;
     bottom: 0;
@@ -105,10 +108,7 @@ body{
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   z-index: 101;
 }
-#clock{
-    position: fixed;
-    right: 20px;
-}
+
 
 /* keyframes */
 @keyframes breathe{

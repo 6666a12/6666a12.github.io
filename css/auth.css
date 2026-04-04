@@ -1,60 +1,102 @@
 /* ============================================
    Global Authentication Styles - 全局认证样式
-   用于所有页面的认证状态显示
+   整合到顶部菜单栏中，不拉伸菜单栏
    ============================================ */
 
-/* 认证状态指示器 */
-.auth-status {
-    position: fixed;
-    top: 50px;
-    right: 10px;
-    z-index: 100;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 8px 16px;
-    border-radius: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    font-size: 13px;
+/* 顶部菜单中的认证状态 - 右对齐，不拉伸 */
+.topmenu li.auth-item {
+    float: right;
+    margin: 0 5px 0 5px;
+    height: auto;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
 }
 
-/* 登录状态样式 */
-.auth-status.logged-in {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* 认证状态内部链接/按钮 - 严格控制高度 */
+.topmenu li.auth-item a,
+.topmenu li.auth-item span,
+.topmenu li.auth-item button {
+    border-style: solid;
+    border-color: rgb(245, 179, 132);
+    border-radius: 10px;
+    border-width: 1.5px;
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    padding: 4px 4px;
+    margin: 7px;
+    background: transparent;
+    color: blueviolet;
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.4s linear;
+    line-height: 1.2;
+    height: 33px;
+    box-sizing: border-box;
+    vertical-align: middle;
+}
+
+/* 已登录状态高亮 */
+.topmenu li.auth-item.logged-in a,
+.topmenu li.auth-item.logged-in span {
+    background-color: dodgerblue;
     color: white;
+    border-color: dodgerblue;
+}
+
+/* 悬停效果 */
+.topmenu li.auth-item a:hover,
+.topmenu li.auth-item button:hover {
+    transform: translateY(-1px);
+    transition-duration: 0.4s;
+    transition-timing-function: linear;
+    background-color: rgba(245, 179, 132, 0.3);
+}
+
+.topmenu li.auth-item.logged-in a:hover {
+    background-color: #1e90ff;
 }
 
 /* 邮箱显示 */
-.auth-status .auth-email {
-    max-width: 120px;
+.topmenu li.auth-item .auth-email {
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: inline-block;
+    margin-left: 2px;
 }
 
-/* 按钮和链接 */
-.auth-status a,
-.auth-status button {
-    color: inherit;
-    text-decoration: none;
-    background: rgba(255, 255, 255, 0.2);
+/* 退出按钮 */
+.topmenu li.auth-item button {
+    background: none;
+    margin-left: 2px;
+    padding: 4px 6px;
+    min-width: 24px;
+    justify-content: center;
+}
+
+/* 加载中样式 */
+.topmenu li.auth-item .loading-text {
+    color: #666;
+    font-style: italic;
     border: none;
-    padding: 4px 10px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 12px;
-    font-family: inherit;
-    transition: background 0.2s ease;
+    background: none;
 }
 
-.auth-status a:hover,
-.auth-status button:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* 悬停效果增强 */
-.auth-status:not(.logged-in) a:hover {
-    background: rgba(102, 126, 234, 0.1);
+/* 响应式：小屏幕时简化显示 */
+@media screen and (max-width: 768px) {
+    .topmenu li.auth-item .auth-email {
+        max-width: 60px;
+    }
+    
+    .topmenu li.auth-item a,
+    .topmenu li.auth-item span,
+    .topmenu li.auth-item button {
+        font-size: 12px;
+        padding: 3px 6px;
+        height: 26px;
+    }
 }

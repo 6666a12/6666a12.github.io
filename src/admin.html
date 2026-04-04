@@ -156,11 +156,36 @@
         // 等待认证初始化
         await Auth.init();
         
+        // 订阅认证状态变化（更新顶部菜单）
+        Auth.subscribe(updateTopMenuAuth);
+        
         // 设置初始路由
         if (!location.hash) {
             router.push('/login');
         } else {
             router.render();
+        }
+    }
+    
+    // 更新顶部菜单认证状态
+    function updateTopMenuAuth(user) {
+        const container = document.getElementById('auth-item');
+        if (!container) return;
+        if (user) {
+            container.classList.add('logged-in');
+            container.innerHTML = `<a href="#/user" title="${user.email}">👤 <span class="auth-email">${user.email}</span></a><button onclick="handleTopMenuLogout()" title="退出">×</button>`;
+        } else {
+            container.classList.remove('logged-in');
+            container.innerHTML = `<a href="#/login">登录</a>`;
+        }
+    }
+    
+    async function handleTopMenuLogout() {
+        try {
+            await Auth.logout();
+            router.push('/login');
+        } catch (e) {
+            console.error('退出失败:', e);
         }
     }
 
