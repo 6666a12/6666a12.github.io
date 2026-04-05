@@ -71,97 +71,16 @@
 <!-- 全局认证模块 -->
 <script src="components/auth.js"></script>
 <script src="components/sc.js"></script>
+<script src="components/audio-player.js"></script>
 <script>
-    let statu = false;
-    let list = [
-        {artist: "Feryquitous", trackname: "愚か者の賢人論", src: "audio/Feryquitous - 愚か者の賢人論.mp3"},
-        {artist: "Dachs", trackname: "Holy Night,Silent Night", src: "audio/Dachs - Holy Night, Silent Night.mp3"},
-        {artist: "Dachs", trackname: "Mother Earth (Original Mix)", src: "audio/Mother Earth (Original Mix) - Dachs.mp3"},
-        {artist: "DJ TOTTO", trackname: "童話回廊", src: "audio/DJ TOTTO - 童話回廊.mp3"},
-        {artist: "polysha", trackname: "Where The Spirits Go on", src: "audio/polysha - Where The Spirits Go on.mp3"}
-    ];
-    let pos = 0;
-    const len = list.length - 1;
-
-    const audio = document.getElementById("audio_player");
-    const pgslider = document.getElementById("pgslider");
-    const pgtxt = document.getElementById("pgtxt");
-    const pausebt = document.getElementById("pausebt");
-    const trackinfo = document.getElementById("trackinfo");
-
-    const GetCurrentTrack = () => {return list[pos].src;}
-    const Currentname = () => {return list[pos].artist+ " - "+ list[pos].trackname;}
-
-    const formatTime = (seconds) => {
-        if (isNaN(seconds)) return "0:00";
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function loadTrack(index) {
-        if (index < 0 || index >= list.length) return;
-        pos = index;
-        audio.src = list[pos].src;
-        trackinfo.textContent = Currentname();
-        pgslider.value = 0;
-        pgtxt.textContent = "0:00 / 0:00";
-        if (statu) {
-            audio.play().catch(e => console.log("自动播放被阻止:", e));
-        }
-    }
-
-    const pgdn = () => {
-        audio.pause();statu = false;
-        if(pos == 0)pos = len;
-        else pos--;
-        loadTrack(pos);
-    }
-
-    const pgup = () => {
-        audio.pause();statu = false;
-        if(pos == len)pos = 0;
-        else pos++;
-        loadTrack(pos);
-    }
-
-    const pause = () => {
-        if(statu){
-            pausebt.innerText = "▶";
-            audio.pause();
-        }else{
-            if(!audio.src){
-                loadTrack(pos);
-            }
-            audio.play();
-            pausebt.innerText = "⏸"; 
-        }
-        statu = !statu;
-    }
-
-    const seekaudio = (percent) => {
-        if(!audio.duration)return;
-        const time = audio.duration * (percent / 100);
-        audio.currentTime = time;
-    }
-
-    const setvolume = (percent) => {audio.volume = percent;}
-
-    audio.ontimeupdate = () => {
-        if(!audio.duration)return;
-
-        const percent1 = audio.currentTime / audio.duration * 100;
-        pgslider.value = percent1 || 0;
-
-        const current = formatTime(audio.currentTime);
-        const total = formatTime(audio.duration || 0);
-        pgtxt.textContent = `${current} / ${total}`;
-    }
-
-    audio.onended = () => {pgup();}
-    audio.onloadedmetadata = () => {pgtxt.textContent = `0:00 / ${formatTime(audio.duration)}`;}
-    
-    loadTrack(pos);
+    // 初始化音频播放器
+    AudioPlayer.init({
+        audioId: "audio_player",
+        sliderId: "pgslider",
+        timeId: "pgtxt",
+        pauseBtnId: "pausebt",
+        trackInfoId: "trackinfo"
+    });
     
     // 更新顶部菜单认证状态
     function updateAuthStatus(user) {

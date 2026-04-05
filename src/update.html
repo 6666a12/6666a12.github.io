@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>更新日志</title>
     <link rel="stylesheet" type="text/css" href="../css/m.css">
+    <link rel="stylesheet" type="text/css" href="../css/audio.css">
     <link rel="stylesheet" type="text/css" href="../css/auth.css">
 </head>
 <body>
     <img class="bg" src="../pic/bg.jpg" alt="">
-    <!-- 全局认证状态 -->
-    <div id="global-auth-status" class="auth-status">
-        <span>加载中...</span>
-    </div>
     <!-- 顶端目录 -->
     <div>
         <ul class="topmenu">
@@ -35,6 +32,23 @@
         <b>2026.4.4</b> --- 添加完整的用户认证系统，支持全局登录状态同步<br>
         <b>2026.2.10</b> --- 添加了音乐播放功能<br>
     </div>
+    <!-- 音频区块 -->
+    <div id="audiom" title="music">
+        <div id="playarea">
+            <audio id="audio_player"></audio>
+            <div id="trackinfo">请选择歌曲</div>
+            <div id="audiobt">
+                <button type="button" onclick="pgdown()">👈</button>
+                <button type="button" onclick="pause()" id="pausebt">▶</button>
+                <button type="button" onclick="pgup()">👉</button>
+            </div>
+        </div>
+        <div id="progress">
+            <input placeholder="0" type="range" id="pgslider" min="0" max="100" value="0" oninput="seekaudio(this.value)">
+            <span id="pgtxt">0: 00 / 0: 00</span>
+        </div>
+    </div>
+
     <!-- 底部小图标 -->
     <div id="bottomm">
         <ul class="bottom-bar">
@@ -47,7 +61,18 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="../components/auth.js"></script>
 <script src="../components/sc.js"></script>
+<script src="../components/audio-player.js"></script>
 <script>
+    // 初始化音频播放器
+    AudioPlayer.init({
+        audioId: "audio_player",
+        sliderId: "pgslider",
+        timeId: "pgtxt",
+        pauseBtnId: "pausebt",
+        trackInfoId: "trackinfo",
+        basePath: "../"
+    });
+
     function updateAuthStatus(user) {
         const container = document.getElementById('auth-item');
         if (!container) return;

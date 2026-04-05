@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>主页</title>
     <link rel="stylesheet" type="text/css" href="../css/m.css">
+    <link rel="stylesheet" type="text/css" href="../css/audio.css">
     <link rel="stylesheet" type="text/css" href="../css/auth.css">
 </head>
 <body>
@@ -40,6 +41,23 @@
             <p>制作一些我比较感兴趣的游戏或者其他内容的addons</p>
         </div>
     </main>
+    <!-- 音频区块 -->
+    <div id="audiom" title="music">
+        <div id="playarea">
+            <audio id="audio_player"></audio>
+            <div id="trackinfo">请选择歌曲</div>
+            <div id="audiobt">
+                <button type="button" onclick="pgdown()">👈</button>
+                <button type="button" onclick="pause()" id="pausebt">▶</button>
+                <button type="button" onclick="pgup()">👉</button>
+            </div>
+        </div>
+        <div id="progress">
+            <input placeholder="0" type="range" id="pgslider" min="0" max="100" value="0" oninput="seekaudio(this.value)">
+            <span id="pgtxt">0: 00 / 0: 00</span>
+        </div>
+    </div>
+
     <!-- 底部小图标 -->
     <div id="bottomm">
         <ul class="bottom-bar">
@@ -53,7 +71,18 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="../components/auth.js"></script>
 <script src="../components/sc.js"></script>
+<script src="../components/audio-player.js"></script>
 <script>
+    // 初始化音频播放器
+    AudioPlayer.init({
+        audioId: "audio_player",
+        sliderId: "pgslider",
+        timeId: "pgtxt",
+        pauseBtnId: "pausebt",
+        trackInfoId: "trackinfo",
+        basePath: "../"
+    });
+
     function updateAuthStatus(user) {
         const container = document.getElementById('auth-item');
         if (!container) return;
