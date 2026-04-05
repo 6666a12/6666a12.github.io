@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交内容</title>
+    <link rel="stylesheet" type="text/css" href="../css/main.css">
+    <link rel="stylesheet" type="text/css" href="../css/submit.css">
+</head>
+<body>
+    <img class="bg" src="../pic/yz.jpg" alt="">
+    
+    <!-- 顶部菜单 -->
+    <div id="topm">
+        <ul class="topmenu">
+            <li><img src="../pic/stream-pig.gif" width="40" height="40" alt=""></li>
+            <li><a href="../index.html">主页</a></li>
+            <li><a href="home.html">网站简介</a></li>
+            <li><div id="clock" class="breathe"></div></li>
+        </ul>
+    </div>
+    
+    <div class="submit-page">
+        <div class="submit-container">
+            <h2>提交新内容</h2>
+            
+            <form id="submit-form">
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" id="title" name="title" placeholder="输入标题" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">图片</label>
+                    <input type="file" id="image" name="image" accept="image/*" required>
+                    <img id="image-preview" class="image-preview" alt="预览">
+                </div>
+                
+                <div class="form-group">
+                    <label for="zipfile">压缩文件</label>
+                    <input type="file" id="zipfile" name="zipfile" accept=".zip,.rar,.7z,.tar.gz" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">提交</button>
+            </form>
+            
+            <div id="message" class="message"></div>
+            
+            <a href="minecraft.html#/Charts/page/1" class="back-link">返回展示页</a>
+        </div>
+    </div>
+</body>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="../components/charts-submit.js"></script>
+<script src="../components/sc.js"></script>
+<script>
+    // 图片预览
+    document.getElementById('image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('image-preview');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.classList.remove('show');
+        }
+    });
+    
+    // 表单提交
+    document.getElementById('submit-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById('title').value.trim();
+        const imageFile = document.getElementById('image').files[0];
+        const zipFile = document.getElementById('zipfile').files[0];
+        const messageEl = document.getElementById('message');
+        const submitBtn = document.querySelector('.submit-btn');
+        
+        // 验证
+        if (!title || !imageFile || !zipFile) {
+            showMessage('请填写所有字段', 'error');
+            return;
+        }
+        
+        // 禁用按钮
+        submitBtn.disabled = true;
+        submitBtn.textContent = '提交中...';
+        
+        // 提交
+        const result = await ChartsSubmit.submit(title, imageFile, zipFile);
+        
+        if (result.success) {
+            showMessage('提交成功！', 'success');
+            document.getElementById('submit-form').reset();
+            document.getElementById('image-preview').classList.remove('show');
+        } else {
+            showMessage('提交失败: ' + result.error, 'error');
+        }
+        
+        // 恢复按钮
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交';
+    });
+    
+    function showMessage(text, type) {
+        const messageEl = document.getElementById('message');
+        messageEl.textContent = text;
+        messageEl.className = 'message ' + type;
+        
+        setTimeout(() => {
+            messageEl.className = 'message';
+        }, 5000);
+    }
+</script>
+</html>

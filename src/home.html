@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>主页</title>
-    <link rel="stylesheet" type="text/css" href="../css/m.css">
+    <link rel="stylesheet" type="text/css" href="../css/main.css">
     <link rel="stylesheet" type="text/css" href="../css/audio.css">
     <link rel="stylesheet" type="text/css" href="../css/auth.css">
 </head>
@@ -88,10 +88,10 @@
         if (!container) return;
         if (user) {
             container.classList.add('logged-in');
-            container.innerHTML = `<a href="admin.html#/user" title="${user.email}">👤 <span class="auth-email">${user.email}</span></a><button onclick="handleLogout()" title="退出">×</button>`;
+            container.innerHTML = `<a href="admin.html#/user" title="${user.email}">👤</a><button onclick="handleLogout()" title="退出">×</button>`;
         } else {
             container.classList.remove('logged-in');
-            container.innerHTML = `<a href="admin.html#/login">登录</a>`;
+            container.innerHTML = `<a href="admin.html#/login" onclick="localStorage.setItem('login_return_url', window.location.href)">登录</a>`;
         }
     }
     async function handleLogout() {

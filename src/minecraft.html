@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人作品</title>
-    <link rel="stylesheet" type="text/css" href="../css/m.css">
+    <link rel="stylesheet" type="text/css" href="../css/main.css">
     <link rel="stylesheet" type="text/css" href="../css/audio.css">
     <link rel="stylesheet" type="text/css" href="../css/minecraft.css">
     <link rel="stylesheet" type="text/css" href="../css/auth.css">
@@ -21,40 +21,31 @@
             <li><a href="#blog" class="undo" title="没做好">随如🖊</a></li>
             <li><a href="#donation" class="undo" title="没做好">投喂</a></li>
             <li><div class="breathe" id="clock"></div></li>
-            <!-- 认证状态 -->
             <li class="auth-item" id="auth-item">
                 <span class="loading-text">...</span>
             </li>
         </ul>
     </div>
 
-    <div id="app">Hash Router loads in successfully!</div>
+    <div id="app"></div>
 
-    <div>
-        <ul id="sort">
-            <li><b><button type="button" onclick="router.push('/Charts')">Charts</button><br></b></li>
-            <li><b><button type="button" class="undo" onclick="router.push('/Mods')">Mods</button><br></b></li>
-            <li><b><button type="button" class="undo" onclick="router.push('/Music')">Music</button></b></li>
-        </ul>
-    </div>
-
-    
-    <template id="page-404"></template>
-    <template id="page-mod"></template>
-    <template id="page-music"></template>
-
-    <template id="page-charts">
-        <ul>
-            <li><a href="documents/" download></a></li>
-            <li><a href=""></a></li>
-            <li><a href=""></a></li>
-            <li><a href=""></a></li>
-            <li><a href=""></a></li>
-            <li><a href=""></a></li>
-        </ul>
+    <template id="page-login-required">
+        <div class="login-required">
+            <h2>🔒 请先登录</h2>
+            <p>登录以查看内容</p>
+            <a href="admin.html#/login" class="login-link">去登录</a>
+        </div>
     </template>
 
-    <!-- 音频区块 -->
+    <template id="page-charts">
+        <div id="gallery-grid" class="gallery-grid"></div>
+        <div class="pagination">
+            <button id="prevBtn" onclick="ChartsSubmit.prevPage()">←</button>
+            <span id="pageNum">1</span>
+            <button id="nextBtn" onclick="ChartsSubmit.nextPage()">→</button>
+        </div>
+    </template>
+
     <div id="audiom" title="music">
         <div id="playarea">
             <audio id="audio_player"></audio>
@@ -71,6 +62,14 @@
         </div>
     </div>
 
+    <div id="bottomm">
+        <ul class="bottom-bar">
+            <li><a href="https://space.bilibili.com/687368009">关注主播喵</a></li>
+            <li><img src="../pic/trakov-logo.webp" alt="" width="60" height="25"></li>
+            <li><img title="dead game" src="../pic/Dynamix_logo.webp" alt="" width="25" height="25"></li>
+        </ul>
+    </div>
+
 </body>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="../components/auth.js"></script>
@@ -82,17 +81,26 @@
     function updateAuthStatus(user) {
         const container = document.getElementById('auth-item');
         if (!container) return;
+        
         if (user) {
             container.classList.add('logged-in');
-            container.innerHTML = `<a href="admin.html#/user" title="${user.email}">👤 <span class="auth-email">${user.email}</span></a><button onclick="handleLogout()" title="退出">×</button>`;
+            container.innerHTML = `<a href="admin.html#/user" title="${user.email}">👤</a><button onclick="handleLogout()" title="退出">×</button>`;
         } else {
             container.classList.remove('logged-in');
-            container.innerHTML = `<a href="admin.html#/login">登录</a>`;
+            container.innerHTML = `<a href="admin.html#/login" onclick="localStorage.setItem('login_return_url', window.location.href)">登录</a>`;
         }
     }
+    
     async function handleLogout() {
-        try { await Auth.logout(); updateAuthStatus(null); } catch (e) { console.error(e); }
+        try { 
+            await Auth.logout(); 
+            updateAuthStatus(null);
+        } catch (e) { 
+            console.error(e);
+        }
     }
+    
+    // 订阅认证状态变化
     Auth.subscribe(updateAuthStatus);
 
     // 初始化音频播放器
@@ -105,21 +113,36 @@
         basePath: "../"
     });
 
-    // 路由
-    let routes = {
-        '/Charts' : () => RenderPage('page-charts'),
-        '/Mods' : () => RenderPage('page-mods'),
-        '/Music' : () => RenderPage('page-music'),
-        '*' : () => RenderPage('page-404')
+    // 渲染页面内容
+    function renderContent() {
+        if (!Auth.isLoggedIn()) {
+            RenderPage('page-login-required');
+        } else {
+            RenderPage('page-charts', () => {
+                ChartsSubmit.renderGallery('gallery-grid', 1);
+            });
+        }
     }
+
+    // 路由配置
+    let routes = {
+        '/Charts': () => renderContent(),
+        '/Charts/page/:page': (path) => {
+            const match = path.match(/\/Charts\/page\/(\d+)/);
+            const page = match ? parseInt(match[1]) : 1;
+            if (!Auth.isLoggedIn()) {
+                RenderPage('page-login-required');
+            } else {
+                RenderPage('page-charts', () => {
+                    ChartsSubmit.renderGallery('gallery-grid', page);
+                });
+            }
+        },
+        '*': () => RenderPage('page-404')
+    };
 
     let router = new HashRouter(routes);
-    router.push('*');
-
-    const reloadhash = () => {
-        if(router.destroy())delete router;
-        router = new HashRouter(routes);
-        router.push('list');
-    }
+    window.router = router;
+    router.push('/Charts');
 </script>
 </html>

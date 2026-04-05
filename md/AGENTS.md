@@ -43,7 +43,7 @@ The website features a custom audio player, hash-based client-side routing for S
 │   ├── audio.css          # Audio player component styles
 │   ├── auth.css           # Global authentication status styles
 │   ├── log-in.css         # Legacy login form styles
-│   ├── m.css              # Main stylesheet (global styles)
+│   ├── main.css           # Main stylesheet (global styles)
 │   └── minecraft.css      # Minecraft/hobbies page styles
 ├── pic/                    # Image assets
 │   ├── bg.jpg             # Background image
@@ -144,13 +144,13 @@ A custom audio player is embedded in `index.html` with:
 ### File Organization
 
 - **HTML Pages**: Main page in root (`index.html`), subpages in `src/`
-- **CSS**: Modular approach - `m.css` for global styles, specific files for components
+- **CSS**: Modular approach - `main.css` for global styles, specific files for components
 - **JavaScript**: Reusable components in `components/`, page-specific scripts inline
 - **Assets**: Audio in `audio/`, images in `pic/`
 
 ### Path Conventions
 
-- Use relative paths: `../css/m.css` from `src/` files
+- Use relative paths: `../css/main.css` from `src/` files
 - Root-level files reference: `pic/bg.jpg` (no leading slash)
 - Always use forward slashes for cross-platform compatibility
 
