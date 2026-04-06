@@ -77,7 +77,32 @@
 <script src="../components/audio-player.js"></script>
 <script src="../components/Hash.js"></script>
 <script>
-    // 认证状态显示
+    // 认证状态管理 - 使用 islogged 类实现响应式登录状态
+    class islogged extends EventTarget {
+        #value = null;
+
+        set value(v) {
+            // 只有值真正改变时才触发事件
+            if (this.#value !== v) {
+                this.#value = v;
+                this.dispatchEvent(new CustomEvent('change', { detail: v }));
+            }
+        }
+        get value() { return this.#value; }
+    }
+
+    // 创建全局登录状态实例
+    const loginState = new islogged();
+
+    // 监听登录状态变化，自动重新渲染页面内容
+    loginState.addEventListener('change', (e) => {
+        // 通知路由器重新渲柕当前页面
+        if (window.router) {
+            window.router.render();
+        }
+    });
+
+    // 更新顶部导航栏认证状态显示
     function updateAuthStatus(user) {
         const container = document.getElementById('auth-item');
         if (!container) return;
@@ -91,17 +116,21 @@
         }
     }
     
+    // 处理退出登录 - Auth.logout() 会触发 Auth.subscribe 回调
     async function handleLogout() {
         try { 
             await Auth.logout(); 
-            updateAuthStatus(null);
+            // 不需要手动设置 loginState，Auth.subscribe 回调会处理
         } catch (e) { 
             console.error(e);
         }
     }
     
-    // 订阅认证状态变化
-    Auth.subscribe(updateAuthStatus);
+    // 订阅认证状态变化 - 单一入口管理状态
+    Auth.subscribe((user) => {
+        updateAuthStatus(user);
+        loginState.value = !!user;  // 设置登录状态，触发页面重新渲染
+    });
 
     // 初始化音频播放器
     AudioPlayer.init({
@@ -140,7 +169,7 @@
         },
         '*': () => RenderPage('page-404')
     };
-
+    
     let router = new HashRouter(routes);
     window.router = router;
     router.push('/Charts');
