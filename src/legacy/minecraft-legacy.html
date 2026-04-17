@@ -3,34 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人作品</title>
     <link rel="stylesheet" type="text/css" href="../css/main.css">
     <link rel="stylesheet" type="text/css" href="../css/audio.css">
-    <title>旮旯game分享</title>
+    <link rel="stylesheet" type="text/css" href="../css/minecraft.css">
     <link rel="stylesheet" type="text/css" href="../css/auth.css">
 </head>
 <body>
     <img class="bg" src="../pic/bg.jpg" alt="">
-    <!-- top menu -->
-    <div id="topm">
+    <div>
         <ul class="topmenu">
             <li><img src="../pic/stream-pig.gif" width="40" height="40" alt=""></li>
             <li><a href="../index.html">主页</a></li>
             <li><a href="home.html">网站简介</a></li>
-            <li><a href="articles.html" class="highlight">艺术鉴赏</a></li>
+            <li><a href="articles.html">艺术鉴赏</a></li>
             <li><a href="minecraft.html">爱好制作</a></li>
             <li><a href="#blog" class="undo" title="没做好">随如🖊</a></li>
             <li><a href="#donation" class="undo" title="没做好">投喂</a></li>
             <li><div class="breathe" id="clock"></div></li>
-            <!-- 认证状态 -->
             <li class="auth-item" id="auth-item">
                 <span class="loading-text">...</span>
             </li>
         </ul>
     </div>
-    <!-- 界面 -->
+
     <div id="app"></div>
-    
-    <!-- 音频区块 -->
+
+    <template id="page-login-required">
+        <div class="login-required">
+            <h2>🔒 请先登录</h2>
+            <p>登录以查看内容</p>
+            <a href="admin.html#/login" class="login-link">去登录</a>
+        </div>
+    </template>
+
+    <template id="page-charts">
+        <div id="gallery-grid" class="gallery-grid"></div>
+        <div class="pagination">
+            <button id="prevBtn" onclick="ChartsSubmit.prevPage()">←</button>
+            <span id="pageNum">1</span>
+            <button id="nextBtn" onclick="ChartsSubmit.nextPage()">→</button>
+        </div>
+    </template>
+
     <div id="audiom" title="music">
         <div id="playarea">
             <audio id="audio_player"></audio>
@@ -47,7 +62,6 @@
         </div>
     </div>
 
-    <!-- 底部小图标 -->
     <div id="bottomm">
         <ul class="bottom-bar">
             <li><a href="https://space.bilibili.com/687368009">关注主播喵</a></li>
@@ -55,18 +69,44 @@
             <li><img title="dead game" src="../pic/Dynamix_logo.webp" alt="" width="25" height="25"></li>
         </ul>
     </div>
+
 </body>
-<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="../components/auth.js"></script>
-<script src="../components/clock.js"></script>
+<script src="../components/sc.js"></script>
 <script src="../components/audio-player.js"></script>
 <script src="../components/Hash.js"></script>
 <script>
-    // 认证状态显示
+    // 认证状态管理 - 使用 islogged 类实现响应式登录状态
+    class islogged extends EventTarget {
+        #value = null;
+
+        set value(v) {
+            // 只有值真正改变时才触发事件
+            if (this.#value !== v) {
+                this.#value = v;
+                this.dispatchEvent(new CustomEvent('change', { detail: v }));
+            }
+        }
+        get value() { return this.#value; }
+    }
+
+    // 创建全局登录状态实例
+    const loginState = new islogged();
+
+    // 监听登录状态变化，自动重新渲染页面内容
+    loginState.addEventListener('change', (e) => {
+        // 通知路由器重新渲柕当前页面
+        if (window.router) {
+            window.router.render();
+        }
+    });
+
+    // 更新顶部导航栏认证状态显示
     function updateAuthStatus(user) {
         const container = document.getElementById('auth-item');
         if (!container) return;
+        
         if (user) {
             container.classList.add('logged-in');
             container.innerHTML = `<a href="admin.html#/user" title="${user.email}">👤</a><button onclick="handleLogout()" title="退出">×</button>`;
@@ -75,10 +115,22 @@
             container.innerHTML = `<a href="admin.html#/login" onclick="localStorage.setItem('login_return_url', window.location.href)">登录</a>`;
         }
     }
+    
+    // 处理退出登录 - Auth.logout() 会触发 Auth.subscribe 回调
     async function handleLogout() {
-        try { await Auth.logout(); updateAuthStatus(null); } catch (e) { console.error(e); }
+        try { 
+            await Auth.logout(); 
+            // 不需要手动设置 loginState，Auth.subscribe 回调会处理
+        } catch (e) { 
+            console.error(e);
+        }
     }
-    Auth.subscribe(updateAuthStatus);
+    
+    // 订阅认证状态变化 - 单一入口管理状态
+    Auth.subscribe((user) => {
+        updateAuthStatus(user);
+        loginState.value = !!user;  // 设置登录状态，触发页面重新渲染
+    });
 
     // 初始化音频播放器
     AudioPlayer.init({
@@ -90,19 +142,36 @@
         basePath: "../"
     });
 
-    // 路由
+    // 渲染页面内容
+    function renderContent() {
+        if (!Auth.isLoggedIn()) {
+            RenderPage('page-login-required');
+        } else {
+            RenderPage('page-charts', () => {
+                ChartsSubmit.renderGallery('gallery-grid', 1);
+            });
+        }
+    }
+
+    // 路由配置
     let routes = {
-        '/list' : () => RenderPage('page-list'),
-        '*' : () => RenderPage('page-404')
-    }
-
+        '/Charts': () => renderContent(),
+        '/Charts/page/:page': (path) => {
+            const match = path.match(/\/Charts\/page\/(\d+)/);
+            const page = match ? parseInt(match[1]) : 1;
+            if (!Auth.isLoggedIn()) {
+                RenderPage('page-login-required');
+            } else {
+                RenderPage('page-charts', () => {
+                    ChartsSubmit.renderGallery('gallery-grid', page);
+                });
+            }
+        },
+        '*': () => RenderPage('page-404')
+    };
+    
     let router = new HashRouter(routes);
-    router.push('/list');
-
-    const reloadhash = () => {
-        if(router.destroy())delete router;
-        router = new HashRouter(routes);
-        router.push('list');
-    }
+    window.router = router;
+    router.push('/Charts');
 </script>
 </html>

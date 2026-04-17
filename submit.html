@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Inventory Manager</title>
+    <link rel="stylesheet" type="text/css" href="css/submit.css">
+    <style>
+        #cover-preview{
+            display: none;
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 6px;
+        }
+        #cover-preview.show{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="submit-page">
+        <div class="submit-container">
+            <div class="form-group">
+                <label for="title">歌曲标题</label>
+                <input type="text" id="title" name="title" placeholder="填入歌曲标题">
+            </div>
+
+            <div class="form-group">
+                <label for="cover">封面</label>
+                <input type="file" id="cover" name="cover" accept="img/*" required>
+                <img id="cover-preview" alt="preview">
+            </div>
+
+            <div class="form-group">
+                <label for="chart">谱面文件</label>
+                <input type="file" id="chart" name="chart" placeholder="0" accept=".zip" required>
+            </div>
+            
+            <button class="submit-btn" onclick="uploadFiles()">上传文件</button>
+            <a href="src/minecraft.html" class="back-link">查看展示页</a>
+        </div>
+    </div>
+</body>
+<script>
+    //<button class="submit-btn" onclick="getTopLevelFolders()">获取文件夹列表(调试)</button>
+    const owner = "6666a12".trim();
+    const repo = "Charts".trim();
+    const token = "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".trim();//考虑用后端进行掩盖。
+    // 图片预览
+    document.getElementById('cover').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('cover-preview');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.classList.add('show');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.classList.remove('show');
+        }
+    });
+
+    async function getTopLevelFolders(){
+            
+        try {
+            // 构建请求头
+            const headers = {
+                'Accept': 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28'
+            };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+                
+            // 调用 Contents API 获取根目录
+            const response = await fetch(
+               `https://api.github.com/repos/${owner}/${repo}/contents`,
+                { headers }
+            );
+                
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('仓库不存在或没有访问权限');
+                if (response.status === 403) throw new Error('API 速率限制，请提供 Token');
+                throw new Error(`HTTP ${response.status}`);
+            }
+                
+            const data = await response.json();
+                
+            // 筛选出所有一级文件夹 (type === "dir")
+            const folders = data.filter(item => item.type === 'dir');
+                
+            return folders.length+1;
+        } catch (error) {
+            alert(error);
+            return null;
+        }
+
+    }
+
+    async function calculateFileHash(file) {
+        const buffer = await file.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function fileToBase64ForGitHub(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function utf8ToBase64(str) {
+        const bytes = new TextEncoder().encode(str);
+        const binString = Array.from(bytes, b => String.fromCharCode(b)).join('');
+        return btoa(binString);
+    }
+
+    async function uploadFiles() {
+        const title = document.getElementById('title').value.trim();
+        const coverInput = document.getElementById('cover');
+        const chartInput = document.getElementById('chart');
+        const coverFile = coverInput.files[0];
+        const chartFile = chartInput.files[0];
+
+        if (!title || !coverFile || !chartFile) {
+            alert('请填写标题并选择封面和谱面文件');
+            return;
+        }
+
+        if (!chartFile.name.toLowerCase().endsWith('.zip')) {
+            alert('谱面文件必须是 zip 格式');
+            return;
+        }
+
+        try {
+            const chartHash = await calculateFileHash(chartFile);
+
+            const headers = {
+                'Accept': 'application/vnd.github+json',
+                'X-GitHub-Api-Version': '2022-11-28'
+            };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const response = await fetch(
+                `https://api.github.com/repos/${owner}/${repo}/contents`,
+                { headers }
+            );
+
+            if (!response.ok) {
+                throw new Error(`获取仓库内容失败: HTTP ${response.status}`);
+            }
+
+            const rootItems = await response.json();
+            const folders = rootItems.filter(item => item.type === 'dir');
+
+            for (const folder of folders) {
+                try {
+                    const infoRes = await fetch(
+                        `https://api.github.com/repos/${owner}/${repo}/contents/${folder.name}/info.txt`,
+                        { headers }
+                    );
+                    if (infoRes.ok) {
+                        const infoData = await infoRes.json();
+                        const infoContent = atob(infoData.content.replace(/\s/g, ''));
+                        const info = JSON.parse(infoContent);
+                        if (info.chartHash === chartHash) {
+                            alert('该压缩文件已经上传过了，请勿重复上传');
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // info.txt 不存在或格式错误，跳过
+                }
+            }
+
+            const folderNumber = folders.length + 1;
+            const coverBase64 = await fileToBase64ForGitHub(coverFile);
+            const chartBase64 = await fileToBase64ForGitHub(chartFile);
+
+            const uploadTime = new Date().toLocaleString('zh-CN');
+            const infoObj = {
+                title: title,
+                uploadTime: uploadTime,
+                chartHash: chartHash
+            };
+            const infoBase64 = utf8ToBase64(JSON.stringify(infoObj, null, 2));
+
+            const coverExt = coverFile.name.split('.').pop();
+            const chartExt = chartFile.name.split('.').pop();
+
+            const files = [
+                { path: `${folderNumber}/cover.${coverExt}`, content: coverBase64, msg: `Upload cover for #${folderNumber}` },
+                { path: `${folderNumber}/chart.${chartExt}`, content: chartBase64, msg: `Upload chart for #${folderNumber}` },
+                { path: `${folderNumber}/info.txt`, content: infoBase64, msg: `Upload info for #${folderNumber}` }
+            ];
+
+            for (const file of files) {
+                const putRes = await fetch(
+                    `https://api.github.com/repos/${owner}/${repo}/contents/${file.path}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            ...headers,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: file.msg,
+                            content: file.content,
+                            branch: 'main'
+                        })
+                    }
+                );
+
+                if (!putRes.ok) {
+                    const err = await putRes.json();
+                    throw new Error(`上传 ${file.path} 失败: ${err.message || putRes.statusText}`);
+                }
+            }
+
+            alert(`上传成功！文件夹编号: ${folderNumber}`);
+            document.getElementById('title').value = '';
+            coverInput.value = '';
+            chartInput.value = '';
+            document.getElementById('cover-preview').classList.remove('show');
+
+        } catch (error) {
+            alert('上传失败: ' + error.message);
+            console.error(error);
+        }
+    }
+</script>
+</html>

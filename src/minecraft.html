@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人作品</title>
+    <title>爱好制作</title>
     <link rel="stylesheet" type="text/css" href="../css/main.css">
-    <link rel="stylesheet" type="text/css" href="../css/audio.css">
     <link rel="stylesheet" type="text/css" href="../css/minecraft.css">
+    <link rel="stylesheet" type="text/css" href="../css/audio.css">
     <link rel="stylesheet" type="text/css" href="../css/auth.css">
 </head>
 <body>
@@ -40,9 +40,9 @@
     <template id="page-charts">
         <div id="gallery-grid" class="gallery-grid"></div>
         <div class="pagination">
-            <button id="prevBtn" onclick="ChartsSubmit.prevPage()">←</button>
+            <button id="prevBtn" onclick="GitHubCharts.prevPage()">←</button>
             <span id="pageNum">1</span>
-            <button id="nextBtn" onclick="ChartsSubmit.nextPage()">→</button>
+            <button id="nextBtn" onclick="GitHubCharts.nextPage()">→</button>
         </div>
     </template>
 
@@ -69,44 +69,19 @@
             <li><img title="dead game" src="../pic/Dynamix_logo.webp" alt="" width="25" height="25"></li>
         </ul>
     </div>
-
 </body>
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="../components/auth.js"></script>
-<script src="../components/sc.js"></script>
+<script src="../components/clock.js"></script>
 <script src="../components/audio-player.js"></script>
-<script src="../components/Hash.js"></script>
+<script src="../components/github-charts.js"></script>
 <script>
-    // 认证状态管理 - 使用 islogged 类实现响应式登录状态
-    class islogged extends EventTarget {
-        #value = null;
-
-        set value(v) {
-            // 只有值真正改变时才触发事件
-            if (this.#value !== v) {
-                this.#value = v;
-                this.dispatchEvent(new CustomEvent('change', { detail: v }));
-            }
-        }
-        get value() { return this.#value; }
-    }
-
-    // 创建全局登录状态实例
-    const loginState = new islogged();
-
-    // 监听登录状态变化，自动重新渲染页面内容
-    loginState.addEventListener('change', (e) => {
-        // 通知路由器重新渲柕当前页面
-        if (window.router) {
-            window.router.render();
-        }
-    });
-
     // 更新顶部导航栏认证状态显示
     function updateAuthStatus(user) {
         const container = document.getElementById('auth-item');
         if (!container) return;
-        
+
         if (user) {
             container.classList.add('logged-in');
             container.innerHTML = `<a href="admin.html#/user" title="${user.email}">👤</a><button onclick="handleLogout()" title="退出">×</button>`;
@@ -115,63 +90,45 @@
             container.innerHTML = `<a href="admin.html#/login" onclick="localStorage.setItem('login_return_url', window.location.href)">登录</a>`;
         }
     }
-    
-    // 处理退出登录 - Auth.logout() 会触发 Auth.subscribe 回调
+
+    // 处理退出登录
     async function handleLogout() {
-        try { 
-            await Auth.logout(); 
-            // 不需要手动设置 loginState，Auth.subscribe 回调会处理
-        } catch (e) { 
+        try {
+            await Auth.logout();
+        } catch (e) {
             console.error(e);
         }
     }
-    
-    // 订阅认证状态变化 - 单一入口管理状态
+
+    // 订阅认证状态变化
     Auth.subscribe((user) => {
         updateAuthStatus(user);
-        loginState.value = !!user;  // 设置登录状态，触发页面重新渲染
-    });
-
-    // 初始化音频播放器
-    AudioPlayer.init({
-        audioId: "audio_player",
-        sliderId: "pgslider",
-        timeId: "pgtxt",
-        pauseBtnId: "pausebt",
-        trackInfoId: "trackinfo",
-        basePath: "../"
+        renderContent();
     });
 
     // 渲染页面内容
     function renderContent() {
+        const app = document.getElementById('app');
         if (!Auth.isLoggedIn()) {
-            RenderPage('page-login-required');
+            const tpl = document.getElementById('page-login-required');
+            app.innerHTML = '';
+            app.appendChild(tpl.content.cloneNode(true));
         } else {
-            RenderPage('page-charts', () => {
-                ChartsSubmit.renderGallery('gallery-grid', 1);
-            });
+            const tpl = document.getElementById('page-charts');
+            app.innerHTML = '';
+            app.appendChild(tpl.content.cloneNode(true));
+            GitHubCharts.renderGallery('gallery-grid', 1);
         }
     }
 
-    // 路由配置
-    let routes = {
-        '/Charts': () => renderContent(),
-        '/Charts/page/:page': (path) => {
-            const match = path.match(/\/Charts\/page\/(\d+)/);
-            const page = match ? parseInt(match[1]) : 1;
-            if (!Auth.isLoggedIn()) {
-                RenderPage('page-login-required');
-            } else {
-                RenderPage('page-charts', () => {
-                    ChartsSubmit.renderGallery('gallery-grid', page);
-                });
-            }
-        },
-        '*': () => RenderPage('page-404')
-    };
-    
-    let router = new HashRouter(routes);
-    window.router = router;
-    router.push('/Charts');
+    // 初始化音频播放器
+    AudioPlayer.init({
+        audioId: 'audio_player',
+        sliderId: 'pgslider',
+        timeId: 'pgtxt',
+        pauseBtnId: 'pausebt',
+        trackInfoId: 'trackinfo',
+        basePath: '../'
+    });
 </script>
 </html>

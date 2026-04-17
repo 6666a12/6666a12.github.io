@@ -1,21 +1,13 @@
 // Charts Submit 模块 - 处理提交和展示逻辑
 const ChartsSubmit = (function() {
     // Supabase 配置 - 从 auth.js 复用
-    const SUPABASE_URL = 'https://czhmbfiqbtcqwdnoyzxl.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aG1iZmlxYnRjcXdkbm95enhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM3NjA1NjgsImV4cCI6MjA1OTMzNjU2OH0.SljM-L7SsD0R5MB_WCzrWO2-0nPF0B4D0k44RhcLl3c';
-    
-    let supabaseClient = null;
     let currentPage = 1;
     let totalPages = 1;
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 1;
 
-    // 初始化 Supabase 客户端
-    function initSupabase() {
-        if (typeof supabase !== 'undefined') {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } else {
-            console.error('Supabase library not loaded');
-        }
+    // 获取全局 Auth 提供的 Supabase 客户端
+    function getSupabaseClient() {
+        return (typeof Auth !== 'undefined' && Auth.supabase) ? Auth.supabase : null;
     }
 
     // 文件转 Base64
@@ -30,7 +22,11 @@ const ChartsSubmit = (function() {
 
     // 提交新内容
     async function submit(title, imageFile, zipFile) {
-        if (!supabaseClient) initSupabase();
+        const supabaseClient = getSupabaseClient();
+        if (!supabaseClient) {
+            console.error('Supabase client not available');
+            return { success: false, error: 'Supabase client not available' };
+        }
         
         try {
             // 转换文件为 base64
@@ -56,7 +52,11 @@ const ChartsSubmit = (function() {
 
     // 获取分页数据
     async function getPage(pageNum) {
-        if (!supabaseClient) initSupabase();
+        const supabaseClient = getSupabaseClient();
+        if (!supabaseClient) {
+            console.error('Supabase client not available');
+            return { success: false, error: 'Supabase client not available' };
+        }
         
         try {
             const from = (pageNum - 1) * ITEMS_PER_PAGE;
@@ -88,7 +88,11 @@ const ChartsSubmit = (function() {
 
     // 获取总数
     async function getTotal() {
-        if (!supabaseClient) initSupabase();
+        const supabaseClient = getSupabaseClient();
+        if (!supabaseClient) {
+            console.error('Supabase client not available');
+            return 0;
+        }
         
         try {
             const { count, error } = await supabaseClient
@@ -122,11 +126,11 @@ const ChartsSubmit = (function() {
     function renderCard(item) {
         return `
             <div class="submission-card" data-id="${item.id}">
+                <h2 class="card-title">${item.title}</h2>
                 <div class="card-image">
                     <img src="${item.image_data || '../pic/placeholder.png'}" alt="${item.title}">
                 </div>
-                <div class="card-info">
-                    <h3>${item.title}</h3>
+                <div class="card-actions">
                     <button class="download-btn" onclick="ChartsSubmit.downloadFile('${item.file_data}', '${item.file_name}')">
                         下载 ${item.file_name || '文件'}
                     </button>
@@ -206,7 +210,7 @@ const ChartsSubmit = (function() {
 
     // 初始化
     function init() {
-        initSupabase();
+        // 复用全局 Auth 的 Supabase 客户端，无需重复初始化
     }
 
     return {

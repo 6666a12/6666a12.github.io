@@ -6,13 +6,7 @@ const AdminAuth = (function() {
     // 初始化
     function init(routerInstance) {
         router = routerInstance;
-        
-        // 覆盖 auth.js 中的 supabase 配置
-        const SUPABASE_URL = 'https://diblhuossmbwbwylmnye.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_hwUuS2OHWH_OPkAExyQUYA_uqTdNLW6';
-        
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        window.Auth._supabase = supabaseClient;
+        // 直接复用全局 Auth 已初始化的 Supabase 客户端
     }
     
     // 查看返回地址（不清除）
